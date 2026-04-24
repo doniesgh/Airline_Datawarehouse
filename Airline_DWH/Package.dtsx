@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:25:35 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{93FFF861-0C6D-44EB-A985-9A8334582B29}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="Package"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionGUID="{15D39159-F13C-4197-8865-B3B58C4DC155}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables />
+</DTS:Executable>

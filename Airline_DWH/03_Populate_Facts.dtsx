@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:27:38 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{A28590C4-A7CD-4A86-97EA-FD136A7F33DD}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="03_Populate_Facts"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{4D9603C1-AC3B-448D-BA98-36C38E9B0F46}"
+  DTS:DelayValidation="True">
+  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{DD000001-0000-4000-8000-DD0000000001}"
+      DTS:ObjectName="Airline_DWH">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+
+    <!-- Both fact tables populated in parallel (no dependencies between them) -->
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_FACT_SATISFACTION"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{DD000002-0000-4000-8000-DD0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_FACT_SATISFACTION"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{DD000001-0000-4000-8000-DD0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.FACT_PASSENGER_SATISFACTION (SK_Date,SK_Customer,SK_Travel,SK_Geography,Gender,CustomerType,Age,FlightDistance,DepartureDelay,ArrivalDelay,TimeConvenience,OnlineBooking,CheckinService,OnlineBoarding,GateLocation,OnboardService,SeatComfort,LegRoom,Cleanliness,FoodAndDrink,InFlightService,InFlightWifi,InFlightEntertainment,BaggageHandling,AvgServiceScore,Satisfaction,Satisfaction_Flag)&#xA;SELECT&#xA;    -1 AS SK_Date,&#xA;    -1 AS SK_Customer,&#xA;    ISNULL((SELECT TOP 1 t.SK_Travel FROM dbo.DIM_TRAVEL t&#xA;            WHERE t.TypeOfTravel=ISNULL(s.TypeOfTravel,N'Unknown')&#xA;            AND t.Class=ISNULL(s.Class,N'Unknown')&#xA;            AND t.SK_Travel &gt; 0),-1) AS SK_Travel,&#xA;    -1 AS SK_Geography,&#xA;    s.Gender, s.CustomerType, s.Age, s.FlightDistance,&#xA;    s.DepartureDelay, s.ArrivalDelay,&#xA;    s.TimeConvenience, s.OnlineBooking, s.CheckinService, s.OnlineBoarding,&#xA;    s.GateLocation, s.OnboardService, s.SeatComfort, s.LegRoom, s.Cleanliness,&#xA;    s.FoodAndDrink, s.InFlightService, s.InFlightWifi, s.InFlightEntertainment,&#xA;    s.BaggageHandling,&#xA;    s.AvgServiceScore,&#xA;    s.Satisfaction,&#xA;    s.Satisfaction_Flag&#xA;FROM STAGING_DB.dbo.stg_airline_satisfaction s;&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_FACT_ACTIVITY"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{DD000003-0000-4000-8000-DD0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_FACT_ACTIVITY"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{DD000001-0000-4000-8000-DD0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.FACT_FLIGHT_ACTIVITY (SK_Customer,SK_Date,SK_LoyaltyCard,SK_Geography,TotalFlights,Distance,PointsAccumulated,PointsRedeemed,DollarCostPointsRedeemed)&#xA;SELECT&#xA;    ISNULL((SELECT TOP 1 c.SK_Customer FROM dbo.DIM_CUSTOMER c WHERE c.LoyaltyNumber=f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 d.SK_Date FROM dbo.DIM_DATE d WHERE d.DateValue=DATEFROMPARTS(f.Year,f.Month,1) AND d.SK_Date &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 c.SK_LoyaltyCard FROM dbo.DIM_CUSTOMER c WHERE c.LoyaltyNumber=f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 c.SK_Geography FROM dbo.DIM_CUSTOMER c WHERE c.LoyaltyNumber=f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1),&#xA;    f.TotalFlights, f.Distance, f.PointsAccumulated, f.PointsRedeemed, f.DollarCostPointsRedeemed&#xA;FROM STAGING_DB.dbo.stg_flight_activity f;&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+  </DTS:Executables>
+
+  <!-- No PrecedenceConstraints: both fact tasks run in parallel -->
+
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout Capacity="4" NumberOfVisibleColumns="4" NumberOfColumns="4">
+        <NodeLayout Size="260,42" Id="Package\SQL_FACT_SATISFACTION" TopLeft="80,60" />
+        <NodeLayout Size="260,42" Id="Package\SQL_FACT_ACTIVITY"     TopLeft="380,60" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+
+</DTS:Executable>

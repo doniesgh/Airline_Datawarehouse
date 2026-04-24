@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:27:03 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{43E39E9B-7F96-404E-ACAD-E6EE530351E8}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="02_Populate_Dimensions"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{F1057600-F723-458A-B261-4ED062ABDC69}"
+  DTS:DelayValidation="True">
+  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{CC000001-0000-4000-8000-CC0000000001}"
+      DTS:ObjectName="Airline_DWH">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+
+    <!-- DIM_DATE, DIM_LOYALTY_CARD, DIM_GEOGRAPHY, DIM_TRAVEL run in parallel -->
+    <!-- DIM_CUSTOMER runs after DIM_LOYALTY_CARD and DIM_GEOGRAPHY complete    -->
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_DIM_DATE"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{CC000002-0000-4000-8000-CC0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_DIM_DATE"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_DATE (DateValue,Year,Quarter,QuarterLabel,MonthNumber,MonthName,DayOfWeek,DayName,IsWeekend,StartOfYear,StartOfQuarter,StartOfMonth)&#xA;SELECT DISTINCT&#xA;    s.DateValue,&#xA;    YEAR(s.DateValue),&#xA;    DATEPART(QUARTER,s.DateValue),&#xA;    CONCAT(N'Q',DATEPART(QUARTER,s.DateValue)),&#xA;    MONTH(s.DateValue),&#xA;    DATENAME(MONTH,s.DateValue),&#xA;    DATEPART(WEEKDAY,s.DateValue),&#xA;    DATENAME(WEEKDAY,s.DateValue),&#xA;    CASE WHEN DATEPART(WEEKDAY,s.DateValue) IN (1,7) THEN 1 ELSE 0 END,&#xA;    s.StartOfYear, s.StartOfQuarter, s.StartOfMonth&#xA;FROM STAGING_DB.dbo.stg_date s&#xA;WHERE s.DateValue IS NOT NULL&#xA;AND NOT EXISTS (SELECT 1 FROM dbo.DIM_DATE d WHERE d.DateValue=s.DateValue AND d.SK_Date &gt; 0);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_DIM_LOYALTY_CARD"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{CC000003-0000-4000-8000-CC0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_DIM_LOYALTY_CARD"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_LOYALTY_CARD (LoyaltyCard)&#xA;SELECT DISTINCT ISNULL(s.LoyaltyCard,N'Unknown')&#xA;FROM STAGING_DB.dbo.stg_customer_loyalty s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_LOYALTY_CARD d&#xA;    WHERE d.LoyaltyCard=ISNULL(s.LoyaltyCard,N'Unknown') AND d.SK_LoyaltyCard &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_DIM_GEOGRAPHY"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{CC000004-0000-4000-8000-CC0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_DIM_GEOGRAPHY"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_GEOGRAPHY (Country,Province,City,PostalCode)&#xA;SELECT DISTINCT&#xA;    ISNULL(s.Country,N'Unknown'),&#xA;    ISNULL(s.Province,N'Unknown'),&#xA;    ISNULL(s.City,N'Unknown'),&#xA;    ISNULL(s.PostalCode,N'Unknown')&#xA;FROM STAGING_DB.dbo.stg_customer_loyalty s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_GEOGRAPHY d&#xA;    WHERE d.Country=ISNULL(s.Country,N'Unknown')&#xA;    AND d.Province=ISNULL(s.Province,N'Unknown')&#xA;    AND d.City=ISNULL(s.City,N'Unknown')&#xA;    AND d.PostalCode=ISNULL(s.PostalCode,N'Unknown')&#xA;    AND d.SK_Geography &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_DIM_TRAVEL"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{CC000005-0000-4000-8000-CC0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_DIM_TRAVEL"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_TRAVEL (TypeOfTravel,Class,TravelProfile)&#xA;SELECT DISTINCT&#xA;    ISNULL(s.TypeOfTravel,N'Unknown'),&#xA;    ISNULL(s.Class,N'Unknown'),&#xA;    CONCAT(ISNULL(s.TypeOfTravel,N'Unknown'),N' - ',ISNULL(s.Class,N'Unknown'))&#xA;FROM STAGING_DB.dbo.stg_airline_satisfaction s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_TRAVEL d&#xA;    WHERE d.TypeOfTravel=ISNULL(s.TypeOfTravel,N'Unknown')&#xA;    AND d.Class=ISNULL(s.Class,N'Unknown')&#xA;    AND d.SK_Travel &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_DIM_CUSTOMER"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{CC000006-0000-4000-8000-CC0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_DIM_CUSTOMER"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_CUSTOMER (LoyaltyNumber,Gender,Education,Salary,MaritalStatus,CLV,EnrollmentType,EnrollmentYear,EnrollmentMonth,CancellationYear,CancellationMonth,IsChurned,SK_LoyaltyCard,SK_Geography,EnrollmentDate,SCD_StartDate,SCD_EndDate,SCD_IsCurrent)&#xA;SELECT&#xA;    s.LoyaltyNumber,&#xA;    ISNULL(s.Gender,N'Unknown'),&#xA;    ISNULL(s.Education,N'Unknown'),&#xA;    ISNULL(s.Salary,N'Unknown'),&#xA;    ISNULL(s.MaritalStatus,N'Unknown'),&#xA;    TRY_CAST(s.CLV AS DECIMAL(18,2)),&#xA;    ISNULL(s.EnrollmentType,N'Unknown'),&#xA;    s.EnrollmentYear,&#xA;    s.EnrollmentMonth,&#xA;    TRY_CAST(s.CancellationYear AS INT),&#xA;    TRY_CAST(s.CancellationMonth AS INT),&#xA;    CASE WHEN TRY_CAST(s.CancellationYear AS INT) IS NOT NULL THEN 1 ELSE 0 END,&#xA;    ISNULL((SELECT TOP 1 lc.SK_LoyaltyCard FROM dbo.DIM_LOYALTY_CARD lc WHERE lc.LoyaltyCard=ISNULL(s.LoyaltyCard,N'Unknown') AND lc.SK_LoyaltyCard &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 g.SK_Geography FROM dbo.DIM_GEOGRAPHY g WHERE g.Country=ISNULL(s.Country,N'Unknown') AND g.Province=ISNULL(s.Province,N'Unknown') AND g.City=ISNULL(s.City,N'Unknown') AND g.PostalCode=ISNULL(s.PostalCode,N'Unknown') AND g.SK_Geography &gt; 0),-1),&#xA;    DATEFROMPARTS(s.EnrollmentYear,s.EnrollmentMonth,1),&#xA;    GETDATE(), NULL, 1&#xA;FROM STAGING_DB.dbo.stg_customer_loyalty s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_CUSTOMER d&#xA;    WHERE d.LoyaltyNumber=s.LoyaltyNumber AND d.SK_Customer &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+  </DTS:Executables>
+
+  <!-- DIM_LOYALTY_CARD and DIM_GEOGRAPHY must complete before DIM_CUSTOMER -->
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[LCard_to_Customer]"
+      DTS:CreationName=""
+      DTS:DTSID="{CC000010-0000-4000-8000-CC0000000001}"
+      DTS:From="Package\SQL_DIM_LOYALTY_CARD"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="LCard_to_Customer"
+      DTS:To="Package\SQL_DIM_CUSTOMER" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Geo_to_Customer]"
+      DTS:CreationName=""
+      DTS:DTSID="{CC000011-0000-4000-8000-CC0000000001}"
+      DTS:From="Package\SQL_DIM_GEOGRAPHY"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Geo_to_Customer"
+      DTS:To="Package\SQL_DIM_CUSTOMER" />
+  </DTS:PrecedenceConstraints>
+
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout Capacity="8" NumberOfVisibleColumns="4" NumberOfColumns="4">
+        <NodeLayout Size="220,42" Id="Package\SQL_DIM_DATE"         TopLeft="60,20" />
+        <NodeLayout Size="220,42" Id="Package\SQL_DIM_LOYALTY_CARD" TopLeft="300,20" />
+        <NodeLayout Size="220,42" Id="Package\SQL_DIM_GEOGRAPHY"    TopLeft="540,20" />
+        <NodeLayout Size="220,42" Id="Package\SQL_DIM_TRAVEL"       TopLeft="780,20" />
+        <NodeLayout Size="220,42" Id="Package\SQL_DIM_CUSTOMER"     TopLeft="400,120" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+
+</DTS:Executable>

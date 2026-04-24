@@ -1,0 +1,369 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:26:08 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{16242949-F567-4381-ADDE-03BE8510CAE9}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="Master"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="3"
+  DTS:VersionGUID="{85864E81-E30B-4208-BED2-A133315C6224}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{EE000001-0000-4000-8000-EE0000000001}"
+      DTS:ObjectName="Airline_DWH">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;Application Name=SSIS-Master-{EE000001-0000-4000-8000-EE0000000001}Airline_DWH;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\EPT_00_Create_Database"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:DTSID="{EE000003-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="EPT_00_Create_Database">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask>
+          <UseProjectReference>True</UseProjectReference>
+          <PackageName>00_Create_Database.dtsx</PackageName>
+        </ExecutePackageTask>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\EPT_01_Load_Staging"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:DTSID="{EE000004-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="EPT_01_Load_Staging">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask>
+          <UseProjectReference>True</UseProjectReference>
+          <PackageName>01_Load_Staging.dtsx</PackageName>
+        </ExecutePackageTask>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\EPT_02_Populate_Dimensions"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:DTSID="{EE000005-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="EPT_02_Populate_Dimensions">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask>
+          <UseProjectReference>True</UseProjectReference>
+          <PackageName>02_Populate_Dimensions.dtsx</PackageName>
+        </ExecutePackageTask>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\EPT_03_Populate_Facts"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:DTSID="{EE000006-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="EPT_03_Populate_Facts">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask>
+          <UseProjectReference>True</UseProjectReference>
+          <PackageName>03_Populate_Facts.dtsx</PackageName>
+        </ExecutePackageTask>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\EPT_04_Finalize"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:DTSID="{EE000007-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="EPT_04_Finalize">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask>
+          <UseProjectReference>True</UseProjectReference>
+          <PackageName>04_Finalize.dtsx</PackageName>
+        </ExecutePackageTask>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\SQL_ETL_Complete"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{EE000008-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_ETL_Complete"
+      DTS:TaskContact="Execute SQL Task"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{EE000001-0000-4000-8000-EE0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;IF OBJECT_ID(N'etl.run_log') IS NOT NULL&#xA;BEGIN&#xA;    DECLARE @stgSat INT,@stgAct INT,@stgCust INT,@stgDate INT,@fSat INT,@fAct INT;&#xA;    SELECT @stgSat=COUNT(*) FROM dbo.stg_airline_satisfaction;&#xA;    SELECT @stgAct=COUNT(*) FROM dbo.stg_flight_activity;&#xA;    SELECT @stgCust=COUNT(*) FROM dbo.stg_customer_loyalty;&#xA;    SELECT @stgDate=COUNT(*) FROM dbo.stg_date;&#xA;    SELECT @fSat=COUNT(*) FROM [DWH_DB].[dbo].[FACT_PASSENGER_SATISFACTION];&#xA;    SELECT @fAct=COUNT(*) FROM [DWH_DB].[dbo].[FACT_FLIGHT_ACTIVITY];&#xA;    UPDATE etl.run_log&#xA;    SET ended_at=GETDATE(), status=N'Completed',&#xA;        stg_satisfaction=@stgSat, stg_loyalty=@stgAct,&#xA;        stg_customer=@stgCust, stg_date=@stgDate,&#xA;        fact_satisfaction=@fSat, fact_activity=@fAct,&#xA;        dim_summary=CONCAT(&#xA;            N'DIM_DATE:',(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_DATE] WHERE SK_Date &gt; 0),&#xA;            N' DIM_LOYALTY_CARD:',(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_LOYALTY_CARD] WHERE SK_LoyaltyCard &gt; 0),&#xA;            N' DIM_GEOGRAPHY:',(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_GEOGRAPHY] WHERE SK_Geography &gt; 0),&#xA;            N' DIM_CUSTOMER:',(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_CUSTOMER] WHERE SK_Customer &gt; 0),&#xA;            N' DIM_TRAVEL:',(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_TRAVEL] WHERE SK_Travel &gt; 0))&#xA;    WHERE run_id=(SELECT MAX(run_id) FROM etl.run_log WHERE status=N'Running');&#xA;END" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\SQL_ETL_Start"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{EE000002-0000-4000-8000-EE0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_ETL_Start"
+      DTS:TaskContact="Execute SQL Task"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{EE000001-0000-4000-8000-EE0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;IF OBJECT_ID(N'etl.run_log') IS NOT NULL&#xA;    INSERT INTO etl.run_log (started_at,status) VALUES (GETDATE(),N'Running');" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Create_to_Staging]"
+      DTS:CreationName=""
+      DTS:DTSID="{EE000011-0000-4000-8000-EE0000000001}"
+      DTS:From="Package\EPT_00_Create_Database"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Create_to_Staging"
+      DTS:To="Package\EPT_01_Load_Staging" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Dims_to_Facts]"
+      DTS:CreationName=""
+      DTS:DTSID="{EE000013-0000-4000-8000-EE0000000001}"
+      DTS:From="Package\EPT_02_Populate_Dimensions"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Dims_to_Facts"
+      DTS:To="Package\EPT_03_Populate_Facts" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Facts_to_Finalize]"
+      DTS:CreationName=""
+      DTS:DTSID="{EE000014-0000-4000-8000-EE0000000001}"
+      DTS:From="Package\EPT_03_Populate_Facts"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Facts_to_Finalize"
+      DTS:To="Package\EPT_04_Finalize" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Finalize_to_Complete]"
+      DTS:CreationName=""
+      DTS:DTSID="{EE000015-0000-4000-8000-EE0000000001}"
+      DTS:From="Package\EPT_04_Finalize"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Finalize_to_Complete"
+      DTS:To="Package\SQL_ETL_Complete" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Staging_to_Dims]"
+      DTS:CreationName=""
+      DTS:DTSID="{EE000012-0000-4000-8000-EE0000000001}"
+      DTS:From="Package\EPT_01_Load_Staging"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Staging_to_Dims"
+      DTS:To="Package\EPT_02_Populate_Dimensions" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Start_to_Create]"
+      DTS:CreationName=""
+      DTS:DTSID="{EE000010-0000-4000-8000-EE0000000001}"
+      DTS:From="Package\SQL_ETL_Start"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Start_to_Create"
+      DTS:To="Package\EPT_00_Create_Database" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--Cette section CDATA contient des informations sur la disposition du package. Elle comprend des informations telles que les coordonnées (x,y), la largeur et la hauteur.-->
+<!--Si vous modifiez manuellement cette section et commettez une erreur, vous pouvez la supprimer. -->
+<!--Le package pourra toujours se charger normalement, mais les informations de disposition précédente seront perdues et le concepteur réorganisera automatiquement les éléments sur l'aire de conception.-->
+<Objects
+  Version="8">
+  <!--Chaque nœud ci-dessous contiendra des propriétés qui n'affectent pas le comportement d'exécution.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="203.2,41.6"
+          Id="Package\EPT_00_Create_Database"
+          TopLeft="15.5,107.1" />
+        <NodeLayout
+          Size="185.6,41.6"
+          Id="Package\EPT_01_Load_Staging"
+          TopLeft="24.3,208.7" />
+        <NodeLayout
+          Size="223.2,41.6"
+          Id="Package\EPT_02_Populate_Dimensions"
+          TopLeft="5.50000000000004,310.3" />
+        <NodeLayout
+          Size="193.6,41.6"
+          Id="Package\EPT_03_Populate_Facts"
+          TopLeft="20.3000000000001,411.9" />
+        <NodeLayout
+          Size="157.6,41.6"
+          Id="Package\EPT_04_Finalize"
+          TopLeft="38.3000000000001,513.5" />
+        <NodeLayout
+          Size="174.4,41.6"
+          Id="Package\SQL_ETL_Complete"
+          TopLeft="29.9000000000001,615.1" />
+        <NodeLayout
+          Size="152,41.6"
+          Id="Package\SQL_ETL_Start"
+          TopLeft="41.1,5.49999999999995" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Start_to_Create]"
+          TopLeft="117.1,47.1">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59.9999999999999"
+              Start="0,0"
+              End="0,52.4999999999999">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.4999999999999" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Create_to_Staging]"
+          TopLeft="117.1,148.7">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59.9999999999999"
+              Start="0,0"
+              End="0,52.4999999999999">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.4999999999999" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Staging_to_Dims]"
+          TopLeft="117.1,250.3">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Dims_to_Facts]"
+          TopLeft="117.1,351.9">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Facts_to_Finalize]"
+          TopLeft="117.1,453.5">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59.9999999999999"
+              Start="0,0"
+              End="0,52.4999999999999">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.4999999999999" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Finalize_to_Complete]"
+          TopLeft="117.1,555.1">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59.9999999999999"
+              Start="0,0"
+              End="0,52.4999999999999">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.4999999999999" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:28:00 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{B709E7F2-4C44-4A26-B503-D56A09EDE802}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="04_Finalize"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{1C162A9F-91D7-4F46-9936-35631304BD5B}"
+  DTS:DelayValidation="True">
+  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{FF000001-0000-4000-8000-FF0000000001}"
+      DTS:ObjectName="Airline_DWH">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+
+    <!-- TASK 1a: FACT indexes (parallel with 1b) -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Indexes_Fact"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{FF000002-0000-4000-8000-FF0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Indexes_Fact"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{FF000001-0000-4000-8000-FF0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_fact_sat_travel')&#xA;    CREATE NONCLUSTERED INDEX IX_fact_sat_travel ON dbo.FACT_PASSENGER_SATISFACTION (SK_Travel)&#xA;    INCLUDE (Satisfaction_Flag,AvgServiceScore,Gender,CustomerType)&#xA;    WITH (FILLFACTOR=90, DATA_COMPRESSION=PAGE, SORT_IN_TEMPDB=ON);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_fact_sat_flag')&#xA;    CREATE NONCLUSTERED INDEX IX_fact_sat_flag ON dbo.FACT_PASSENGER_SATISFACTION (Satisfaction_Flag)&#xA;    INCLUDE (SK_Travel,AvgServiceScore,FlightDistance)&#xA;    WITH (FILLFACTOR=90, DATA_COMPRESSION=PAGE, SORT_IN_TEMPDB=ON);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_fact_activity_customer')&#xA;    CREATE NONCLUSTERED INDEX IX_fact_activity_customer ON dbo.FACT_FLIGHT_ACTIVITY (SK_Customer)&#xA;    INCLUDE (SK_Date,TotalFlights,PointsAccumulated)&#xA;    WITH (FILLFACTOR=90, DATA_COMPRESSION=PAGE, SORT_IN_TEMPDB=ON);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_fact_activity_date')&#xA;    CREATE NONCLUSTERED INDEX IX_fact_activity_date ON dbo.FACT_FLIGHT_ACTIVITY (SK_Date)&#xA;    INCLUDE (SK_Customer,TotalFlights,Distance,PointsAccumulated)&#xA;    WITH (FILLFACTOR=90, DATA_COMPRESSION=PAGE, SORT_IN_TEMPDB=ON);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_fact_activity_loyalty')&#xA;    CREATE NONCLUSTERED INDEX IX_fact_activity_loyalty ON dbo.FACT_FLIGHT_ACTIVITY (SK_LoyaltyCard)&#xA;    INCLUDE (TotalFlights,PointsAccumulated,PointsRedeemed)&#xA;    WITH (FILLFACTOR=90, DATA_COMPRESSION=PAGE, SORT_IN_TEMPDB=ON);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- TASK 1b: DIM indexes (parallel with 1a) -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Indexes_Dim"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{FF000003-0000-4000-8000-FF0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Indexes_Dim"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{FF000001-0000-4000-8000-FF0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_dim_date_year_month')&#xA;    CREATE NONCLUSTERED INDEX IX_dim_date_year_month ON dbo.DIM_DATE (Year,MonthNumber)&#xA;    INCLUDE (Quarter,IsWeekend,QuarterLabel) WITH (FILLFACTOR=95);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_dim_customer_loyalty')&#xA;    CREATE NONCLUSTERED INDEX IX_dim_customer_loyalty ON dbo.DIM_CUSTOMER (LoyaltyNumber)&#xA;    INCLUDE (IsChurned,SCD_IsCurrent,EnrollmentDate) WITH (FILLFACTOR=90);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_dim_geo_postalcode')&#xA;    CREATE NONCLUSTERED INDEX IX_dim_geo_postalcode ON dbo.DIM_GEOGRAPHY (PostalCode)&#xA;    INCLUDE (City,Province,Country) WITH (FILLFACTOR=90);&#xA;IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_dim_travel_profile')&#xA;    CREATE NONCLUSTERED INDEX IX_dim_travel_profile ON dbo.DIM_TRAVEL (TypeOfTravel,Class)&#xA;    INCLUDE (TravelProfile) WITH (FILLFACTOR=95);&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- TASK 2: Update statistics (after both index tasks) -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Update_Stats"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{FF000004-0000-4000-8000-FF0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Update_Stats"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{FF000001-0000-4000-8000-FF0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;UPDATE STATISTICS dbo.DIM_DATE WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.DIM_LOYALTY_CARD WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.DIM_GEOGRAPHY WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.DIM_CUSTOMER WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.DIM_TRAVEL WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.FACT_PASSENGER_SATISFACTION WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.FACT_FLIGHT_ACTIVITY WITH SAMPLE 50 PERCENT;&#xA;USE [STAGING_DB];"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- TASK 3: Validate row counts -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Validate_DWH"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{FF000005-0000-4000-8000-FF0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Validate_DWH"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{FF000001-0000-4000-8000-FF0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;DECLARE @cDate INT,@cLCard INT,@cGeo INT,@cCust INT,@cTravel INT,@cFSat INT,@cFAct INT;&#xA;SELECT @cDate=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_DATE] WHERE SK_Date &gt; 0),&#xA;       @cLCard=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_LOYALTY_CARD] WHERE SK_LoyaltyCard &gt; 0),&#xA;       @cGeo=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_GEOGRAPHY] WHERE SK_Geography &gt; 0),&#xA;       @cCust=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_CUSTOMER] WHERE SK_Customer &gt; 0),&#xA;       @cTravel=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[DIM_TRAVEL] WHERE SK_Travel &gt; 0),&#xA;       @cFSat=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[FACT_PASSENGER_SATISFACTION]),&#xA;       @cFAct=(SELECT COUNT(*) FROM [DWH_DB].[dbo].[FACT_FLIGHT_ACTIVITY]);&#xA;IF @cDate=0 RAISERROR(N'VALIDATION FAILED: DIM_DATE is empty!',16,1);&#xA;IF @cLCard=0 RAISERROR(N'VALIDATION FAILED: DIM_LOYALTY_CARD is empty!',16,1);&#xA;IF @cGeo=0 RAISERROR(N'VALIDATION FAILED: DIM_GEOGRAPHY is empty!',16,1);&#xA;IF @cCust=0 RAISERROR(N'VALIDATION FAILED: DIM_CUSTOMER is empty!',16,1);&#xA;IF @cTravel=0 RAISERROR(N'VALIDATION FAILED: DIM_TRAVEL is empty!',16,1);&#xA;IF @cFSat=0 RAISERROR(N'VALIDATION FAILED: FACT_PASSENGER_SATISFACTION is empty!',16,1);&#xA;IF @cFAct=0 RAISERROR(N'VALIDATION FAILED: FACT_FLIGHT_ACTIVITY is empty!',16,1);&#xA;PRINT CONCAT(N'DWH OK | DIM_DATE:',@cDate,N' DIM_LCARD:',@cLCard,N' DIM_GEO:',@cGeo,N' DIM_CUST:',@cCust,N' DIM_TRAVEL:',@cTravel,N' FACT_SAT:',@cFSat,N' FACT_ACT:',@cFAct);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+  </DTS:Executables>
+
+  <!-- Indexes run in parallel, then stats, then validate -->
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[IndexFact_to_Stats]"
+      DTS:CreationName=""
+      DTS:DTSID="{FF000010-0000-4000-8000-FF0000000001}"
+      DTS:From="Package\SQL_Indexes_Fact"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="IndexFact_to_Stats"
+      DTS:To="Package\SQL_Update_Stats" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[IndexDim_to_Stats]"
+      DTS:CreationName=""
+      DTS:DTSID="{FF000011-0000-4000-8000-FF0000000001}"
+      DTS:From="Package\SQL_Indexes_Dim"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="IndexDim_to_Stats"
+      DTS:To="Package\SQL_Update_Stats" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Stats_to_Validate]"
+      DTS:CreationName=""
+      DTS:DTSID="{FF000012-0000-4000-8000-FF0000000001}"
+      DTS:From="Package\SQL_Update_Stats"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Stats_to_Validate"
+      DTS:To="Package\SQL_Validate_DWH" />
+  </DTS:PrecedenceConstraints>
+
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout Capacity="6" NumberOfVisibleColumns="4" NumberOfColumns="4">
+        <NodeLayout Size="230,42" Id="Package\SQL_Indexes_Fact" TopLeft="120,20" />
+        <NodeLayout Size="230,42" Id="Package\SQL_Indexes_Dim"  TopLeft="380,20" />
+        <NodeLayout Size="230,42" Id="Package\SQL_Update_Stats" TopLeft="250,110" />
+        <NodeLayout Size="230,42" Id="Package\SQL_Validate_DWH" TopLeft="250,200" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+
+</DTS:Executable>

@@ -1,0 +1,225 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:26:26 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DelayValidation="True"
+  DTS:DTSID="{4ABEF161-E8A5-4ED9-A6BF-991C6394EBA2}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="00_Create_Database"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="2"
+  DTS:VersionGUID="{F1572BD7-6373-416B-8128-EF5C4B2E452D}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{AA000001-0000-4000-8000-AA0000000001}"
+      DTS:ObjectName="Airline_DWH">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\SQL_Create_DWH_DB"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{AA000003-0000-4000-8000-AA0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Create_DWH_DB"
+      DTS:TaskContact="Execute SQL Task"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{AA000001-0000-4000-8000-AA0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name=N'DWH_DB')&#xA;    CREATE DATABASE [DWH_DB];" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\SQL_Create_DWH_Tables"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{AA000004-0000-4000-8000-AA0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Create_DWH_Tables"
+      DTS:TaskContact="Execute SQL Task"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{AA000001-0000-4000-8000-AA0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;IF OBJECT_ID(N'dbo.FACT_FLIGHT_ACTIVITY') IS NOT NULL DROP TABLE dbo.FACT_FLIGHT_ACTIVITY;&#xA;IF OBJECT_ID(N'dbo.FACT_PASSENGER_SATISFACTION') IS NOT NULL DROP TABLE dbo.FACT_PASSENGER_SATISFACTION;&#xA;IF OBJECT_ID(N'dbo.DIM_CUSTOMER') IS NOT NULL DROP TABLE dbo.DIM_CUSTOMER;&#xA;IF OBJECT_ID(N'dbo.DIM_TRAVEL') IS NOT NULL DROP TABLE dbo.DIM_TRAVEL;&#xA;IF OBJECT_ID(N'dbo.DIM_GEOGRAPHY') IS NOT NULL DROP TABLE dbo.DIM_GEOGRAPHY;&#xA;IF OBJECT_ID(N'dbo.DIM_LOYALTY_CARD') IS NOT NULL DROP TABLE dbo.DIM_LOYALTY_CARD;&#xA;IF OBJECT_ID(N'dbo.DIM_DATE') IS NOT NULL DROP TABLE dbo.DIM_DATE;&#xA;CREATE TABLE dbo.DIM_DATE (&#xA;    SK_Date INT IDENTITY(1,1) PRIMARY KEY,&#xA;    DateValue DATE, Year INT, Quarter INT, QuarterLabel NVARCHAR(20),&#xA;    MonthNumber INT, MonthName NVARCHAR(20), DayOfWeek INT, DayName NVARCHAR(20),&#xA;    IsWeekend BIT, StartOfYear DATE, StartOfQuarter DATE, StartOfMonth DATE&#xA;);&#xA;CREATE TABLE dbo.DIM_LOYALTY_CARD (&#xA;    SK_LoyaltyCard INT IDENTITY(1,1) PRIMARY KEY,&#xA;    LoyaltyCard NVARCHAR(50) NOT NULL&#xA;);&#xA;CREATE TABLE dbo.DIM_GEOGRAPHY (&#xA;    SK_Geography INT IDENTITY(1,1) PRIMARY KEY,&#xA;    Country NVARCHAR(100), Province NVARCHAR(100), City NVARCHAR(100), PostalCode NVARCHAR(20)&#xA;);&#xA;CREATE TABLE dbo.DIM_TRAVEL (&#xA;    SK_Travel INT IDENTITY(1,1) PRIMARY KEY,&#xA;    TypeOfTravel NVARCHAR(50), Class NVARCHAR(50), TravelProfile NVARCHAR(100)&#xA;);&#xA;CREATE TABLE dbo.DIM_CUSTOMER (&#xA;    SK_Customer INT IDENTITY(1,1) PRIMARY KEY,&#xA;    LoyaltyNumber NVARCHAR(50), Gender NVARCHAR(20), Education NVARCHAR(100),&#xA;    Salary NVARCHAR(50), MaritalStatus NVARCHAR(50), CLV DECIMAL(18,2),&#xA;    EnrollmentType NVARCHAR(50), EnrollmentYear INT, EnrollmentMonth INT,&#xA;    CancellationYear INT, CancellationMonth INT, IsChurned BIT,&#xA;    SK_LoyaltyCard INT, SK_Geography INT, EnrollmentDate DATE,&#xA;    SCD_StartDate DATE, SCD_EndDate DATE, SCD_IsCurrent BIT DEFAULT 1&#xA;);&#xA;CREATE TABLE dbo.FACT_PASSENGER_SATISFACTION (&#xA;    SK_Satisfaction INT IDENTITY(1,1) PRIMARY KEY,&#xA;    SK_Date INT DEFAULT -1, SK_Customer INT DEFAULT -1,&#xA;    SK_Travel INT DEFAULT -1, SK_Geography INT DEFAULT -1,&#xA;    Gender NVARCHAR(20), CustomerType NVARCHAR(50), Age INT,&#xA;    FlightDistance INT, DepartureDelay INT NULL, ArrivalDelay INT NULL,&#xA;    TimeConvenience INT, OnlineBooking INT, CheckinService INT,&#xA;    OnlineBoarding INT, GateLocation INT, OnboardService INT,&#xA;    SeatComfort INT, LegRoom INT, Cleanliness INT, FoodAndDrink INT,&#xA;    InFlightService INT, InFlightWifi INT, InFlightEntertainment INT,&#xA;    BaggageHandling INT, AvgServiceScore DECIMAL(5,2),&#xA;    Satisfaction NVARCHAR(50), Satisfaction_Flag BIT&#xA;);&#xA;CREATE TABLE dbo.FACT_FLIGHT_ACTIVITY (&#xA;    SK_Activity INT IDENTITY(1,1) PRIMARY KEY,&#xA;    SK_Customer INT DEFAULT -1, SK_Date INT DEFAULT -1,&#xA;    SK_LoyaltyCard INT DEFAULT -1, SK_Geography INT DEFAULT -1,&#xA;    TotalFlights INT, Distance DECIMAL(18,2),&#xA;    PointsAccumulated DECIMAL(18,2), PointsRedeemed DECIMAL(18,2),&#xA;    DollarCostPointsRedeemed DECIMAL(18,2)&#xA;);&#xA;USE [STAGING_DB];" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\SQL_Reset_Staging"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{AA000002-0000-4000-8000-AA0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Reset_Staging"
+      DTS:TaskContact="Execute SQL Task"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{AA000001-0000-4000-8000-AA0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [STAGING_DB];&#xA;-- ETL audit schema&#xA;IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name=N'etl')&#xA;    EXEC sp_executesql N'CREATE SCHEMA etl';&#xA;IF OBJECT_ID(N'etl.run_log') IS NULL&#xA;BEGIN&#xA;    CREATE TABLE etl.run_log (&#xA;        run_id INT IDENTITY(1,1) PRIMARY KEY,&#xA;        started_at DATETIME, ended_at DATETIME, status NVARCHAR(50),&#xA;        stg_satisfaction INT, stg_loyalty INT, stg_customer INT, stg_date INT,&#xA;        fact_satisfaction INT, fact_activity INT, dim_summary NVARCHAR(500)&#xA;    );&#xA;END;&#xA;-- Drop raw landing tables (created fresh each run by 01_Load_Staging)&#xA;IF OBJECT_ID(N'dbo.stg_raw_satisfaction') IS NOT NULL DROP TABLE dbo.stg_raw_satisfaction;&#xA;IF OBJECT_ID(N'dbo.stg_raw_flight_activity') IS NOT NULL DROP TABLE dbo.stg_raw_flight_activity;&#xA;IF OBJECT_ID(N'dbo.stg_raw_customer_loyalty') IS NOT NULL DROP TABLE dbo.stg_raw_customer_loyalty;&#xA;IF OBJECT_ID(N'dbo.stg_raw_date') IS NOT NULL DROP TABLE dbo.stg_raw_date;&#xA;-- Drop typed staging tables&#xA;IF OBJECT_ID(N'dbo.stg_airline_satisfaction') IS NOT NULL DROP TABLE dbo.stg_airline_satisfaction;&#xA;IF OBJECT_ID(N'dbo.stg_flight_activity') IS NOT NULL DROP TABLE dbo.stg_flight_activity;&#xA;IF OBJECT_ID(N'dbo.stg_customer_loyalty') IS NOT NULL DROP TABLE dbo.stg_customer_loyalty;&#xA;IF OBJECT_ID(N'dbo.stg_date') IS NOT NULL DROP TABLE dbo.stg_date;&#xA;-- Typed staging: satisfaction (with AvgServiceScore + Satisfaction_Flag pre-computed in transform)&#xA;CREATE TABLE dbo.stg_airline_satisfaction (&#xA;    stg_id INT IDENTITY(1,1) PRIMARY KEY,&#xA;    ID INT, Gender NVARCHAR(20), Age INT, CustomerType NVARCHAR(50),&#xA;    TypeOfTravel NVARCHAR(50), Class NVARCHAR(50), FlightDistance INT,&#xA;    DepartureDelay INT NULL, ArrivalDelay INT NULL,&#xA;    TimeConvenience INT, OnlineBooking INT, CheckinService INT,&#xA;    OnlineBoarding INT, GateLocation INT, OnboardService INT,&#xA;    SeatComfort INT, LegRoom INT, Cleanliness INT, FoodAndDrink INT,&#xA;    InFlightService INT, InFlightWifi INT, InFlightEntertainment INT,&#xA;    BaggageHandling INT,&#xA;    AvgServiceScore DECIMAL(5,2),&#xA;    Satisfaction NVARCHAR(50),&#xA;    Satisfaction_Flag BIT&#xA;);&#xA;-- Typed staging: flight activity&#xA;CREATE TABLE dbo.stg_flight_activity (&#xA;    stg_id INT IDENTITY(1,1) PRIMARY KEY,&#xA;    LoyaltyNumber NVARCHAR(50), Year INT, Month INT, TotalFlights INT,&#xA;    Distance DECIMAL(18,2), PointsAccumulated DECIMAL(18,2),&#xA;    PointsRedeemed DECIMAL(18,2), DollarCostPointsRedeemed DECIMAL(18,2)&#xA;);&#xA;-- Typed staging: customer loyalty&#xA;CREATE TABLE dbo.stg_customer_loyalty (&#xA;    stg_id INT IDENTITY(1,1) PRIMARY KEY,&#xA;    LoyaltyNumber NVARCHAR(50), Country NVARCHAR(100), Province NVARCHAR(100),&#xA;    City NVARCHAR(100), PostalCode NVARCHAR(20), Gender NVARCHAR(20),&#xA;    Education NVARCHAR(100), Salary NVARCHAR(50), MaritalStatus NVARCHAR(50),&#xA;    LoyaltyCard NVARCHAR(50), CLV DECIMAL(18,2),&#xA;    EnrollmentType NVARCHAR(50), EnrollmentYear INT, EnrollmentMonth INT,&#xA;    CancellationYear INT NULL, CancellationMonth INT NULL&#xA;);&#xA;-- Typed staging: date&#xA;CREATE TABLE dbo.stg_date (&#xA;    stg_id INT IDENTITY(1,1) PRIMARY KEY,&#xA;    DateValue DATE, StartOfYear DATE, StartOfQuarter DATE, StartOfMonth DATE&#xA;);" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\SQL_Unknown_Members"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{AA000005-0000-4000-8000-AA0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Unknown_Members"
+      DTS:TaskContact="Execute SQL Task"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{AA000001-0000-4000-8000-AA0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;SET IDENTITY_INSERT dbo.DIM_DATE ON;&#xA;IF NOT EXISTS (SELECT 1 FROM dbo.DIM_DATE WHERE SK_Date=-1)&#xA;    INSERT INTO dbo.DIM_DATE (SK_Date,DateValue,Year,Quarter,QuarterLabel,MonthNumber,MonthName,DayOfWeek,DayName,IsWeekend,StartOfYear,StartOfQuarter,StartOfMonth)&#xA;    VALUES (-1,NULL,0,0,N'Unknown',0,N'Unknown',0,N'Unknown',0,NULL,NULL,NULL);&#xA;SET IDENTITY_INSERT dbo.DIM_DATE OFF;&#xA;SET IDENTITY_INSERT dbo.DIM_LOYALTY_CARD ON;&#xA;IF NOT EXISTS (SELECT 1 FROM dbo.DIM_LOYALTY_CARD WHERE SK_LoyaltyCard=-1)&#xA;    INSERT INTO dbo.DIM_LOYALTY_CARD (SK_LoyaltyCard,LoyaltyCard) VALUES (-1,N'Unknown');&#xA;SET IDENTITY_INSERT dbo.DIM_LOYALTY_CARD OFF;&#xA;SET IDENTITY_INSERT dbo.DIM_GEOGRAPHY ON;&#xA;IF NOT EXISTS (SELECT 1 FROM dbo.DIM_GEOGRAPHY WHERE SK_Geography=-1)&#xA;    INSERT INTO dbo.DIM_GEOGRAPHY (SK_Geography,Country,Province,City,PostalCode)&#xA;    VALUES (-1,N'Unknown',N'Unknown',N'Unknown',N'Unknown');&#xA;SET IDENTITY_INSERT dbo.DIM_GEOGRAPHY OFF;&#xA;SET IDENTITY_INSERT dbo.DIM_TRAVEL ON;&#xA;IF NOT EXISTS (SELECT 1 FROM dbo.DIM_TRAVEL WHERE SK_Travel=-1)&#xA;    INSERT INTO dbo.DIM_TRAVEL (SK_Travel,TypeOfTravel,Class,TravelProfile)&#xA;    VALUES (-1,N'Unknown',N'Unknown',N'Unknown');&#xA;SET IDENTITY_INSERT dbo.DIM_TRAVEL OFF;&#xA;SET IDENTITY_INSERT dbo.DIM_CUSTOMER ON;&#xA;IF NOT EXISTS (SELECT 1 FROM dbo.DIM_CUSTOMER WHERE SK_Customer=-1)&#xA;    INSERT INTO dbo.DIM_CUSTOMER (SK_Customer,LoyaltyNumber,Gender,Education,Salary,MaritalStatus,CLV,EnrollmentType,EnrollmentYear,EnrollmentMonth,CancellationYear,CancellationMonth,IsChurned,SK_LoyaltyCard,SK_Geography,EnrollmentDate,SCD_StartDate,SCD_EndDate,SCD_IsCurrent)&#xA;    VALUES (-1,N'Unknown',N'Unknown',N'Unknown',N'Unknown',N'Unknown',0,N'Unknown',0,0,0,0,0,-1,-1,NULL,NULL,NULL,0);&#xA;SET IDENTITY_INSERT dbo.DIM_CUSTOMER OFF;&#xA;USE [STAGING_DB];" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[DWH_to_Tables]"
+      DTS:CreationName=""
+      DTS:DTSID="{AA000011-0000-4000-8000-AA0000000001}"
+      DTS:From="Package\SQL_Create_DWH_DB"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="DWH_to_Tables"
+      DTS:To="Package\SQL_Create_DWH_Tables" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Staging_to_DWH]"
+      DTS:CreationName=""
+      DTS:DTSID="{AA000010-0000-4000-8000-AA0000000001}"
+      DTS:From="Package\SQL_Reset_Staging"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Staging_to_DWH"
+      DTS:To="Package\SQL_Create_DWH_DB" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Tables_to_Unknown]"
+      DTS:CreationName=""
+      DTS:DTSID="{AA000012-0000-4000-8000-AA0000000001}"
+      DTS:From="Package\SQL_Create_DWH_Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Tables_to_Unknown"
+      DTS:To="Package\SQL_Unknown_Members" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--Cette section CDATA contient des informations sur la disposition du package. Elle comprend des informations telles que les coordonnées (x,y), la largeur et la hauteur.-->
+<!--Si vous modifiez manuellement cette section et commettez une erreur, vous pouvez la supprimer. -->
+<!--Le package pourra toujours se charger normalement, mais les informations de disposition précédente seront perdues et le concepteur réorganisera automatiquement les éléments sur l'aire de conception.-->
+<Objects
+  Version="8">
+  <!--Chaque nœud ci-dessous contiendra des propriétés qui n'affectent pas le comportement d'exécution.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="187.2,41.6"
+          Id="Package\SQL_Create_DWH_DB"
+          TopLeft="13.9,107.1" />
+        <NodeLayout
+          Size="204,41.6"
+          Id="Package\SQL_Create_DWH_Tables"
+          TopLeft="5.50000000000003,208.7" />
+        <NodeLayout
+          Size="172.8,41.6"
+          Id="Package\SQL_Reset_Staging"
+          TopLeft="21.1,5.49999999999995" />
+        <NodeLayout
+          Size="197.6,41.6"
+          Id="Package\SQL_Unknown_Members"
+          TopLeft="8.70000000000003,310.3" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Staging_to_DWH]"
+          TopLeft="107.5,47.1">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59.9999999999999"
+              Start="0,0"
+              End="0,52.4999999999999">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.4999999999999" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[DWH_to_Tables]"
+          TopLeft="107.5,148.7">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Tables_to_Unknown]"
+          TopLeft="107.5,250.3">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
