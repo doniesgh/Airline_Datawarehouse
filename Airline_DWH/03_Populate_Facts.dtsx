@@ -1,10 +1,11 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
   DTS:refId="Package"
   DTS:CreationDate="4/24/2026 3:27:38 PM"
   DTS:CreationName="Microsoft.Package"
   DTS:CreatorComputerName="MEA-JJG4XL3"
   DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DelayValidation="True"
   DTS:DTSID="{A28590C4-A7CD-4A86-97EA-FD136A7F33DD}"
   DTS:ExecutableType="Microsoft.Package"
   DTS:LastModifiedProductVersion="17.0.1016.0"
@@ -12,10 +13,10 @@
   DTS:ObjectName="03_Populate_Facts"
   DTS:PackageType="5"
   DTS:ProtectionLevel="0"
-  DTS:VersionBuild="1"
-  DTS:VersionGUID="{4D9603C1-AC3B-448D-BA98-36C38E9B0F46}"
-  DTS:DelayValidation="True">
-  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  DTS:VersionBuild="5"
+  DTS:VersionGUID="{E625782C-3EBB-458D-95AC-5CFD87F7787E}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[Airline_DWH]"
@@ -32,57 +33,1755 @@
   </DTS:ConnectionManagers>
   <DTS:Variables />
   <DTS:Executables>
-
-    <!-- Both fact tables populated in parallel (no dependencies between them) -->
-
     <DTS:Executable
-      DTS:refId="Package\SQL_FACT_SATISFACTION"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{DD000002-0000-4000-8000-DD0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_FACT_ACTIVITY"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{DB71E5BE-1592-4707-BC6B-A174FF71B3A3}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_FACT_SATISFACTION"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_FACT_ACTIVITY"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{DD000001-0000-4000-8000-DD0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.FACT_PASSENGER_SATISFACTION (SK_Date,SK_Customer,SK_Travel,SK_Geography,Gender,CustomerType,Age,FlightDistance,DepartureDelay,ArrivalDelay,TimeConvenience,OnlineBooking,CheckinService,OnlineBoarding,GateLocation,OnboardService,SeatComfort,LegRoom,Cleanliness,FoodAndDrink,InFlightService,InFlightWifi,InFlightEntertainment,BaggageHandling,AvgServiceScore,Satisfaction,Satisfaction_Flag)&#xA;SELECT&#xA;    -1 AS SK_Date,&#xA;    -1 AS SK_Customer,&#xA;    ISNULL((SELECT TOP 1 t.SK_Travel FROM dbo.DIM_TRAVEL t&#xA;            WHERE t.TypeOfTravel=ISNULL(s.TypeOfTravel,N'Unknown')&#xA;            AND t.Class=ISNULL(s.Class,N'Unknown')&#xA;            AND t.SK_Travel &gt; 0),-1) AS SK_Travel,&#xA;    -1 AS SK_Geography,&#xA;    s.Gender, s.CustomerType, s.Age, s.FlightDistance,&#xA;    s.DepartureDelay, s.ArrivalDelay,&#xA;    s.TimeConvenience, s.OnlineBooking, s.CheckinService, s.OnlineBoarding,&#xA;    s.GateLocation, s.OnboardService, s.SeatComfort, s.LegRoom, s.Cleanliness,&#xA;    s.FoodAndDrink, s.InFlightService, s.InFlightWifi, s.InFlightEntertainment,&#xA;    s.BaggageHandling,&#xA;    s.AvgServiceScore,&#xA;    s.Satisfaction,&#xA;    s.Satisfaction_Flag&#xA;FROM STAGING_DB.dbo.stg_airline_satisfaction s;&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="Destination OLE DB"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[FACT_FLIGHT_ACTIVITY]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">true</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Customer]"
+                      cachedDataType="i4"
+                      cachedName="SK_Customer"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Customer]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Customer]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Date]"
+                      cachedDataType="i4"
+                      cachedName="SK_Date"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Date]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Date]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_LoyaltyCard]"
+                      cachedDataType="i4"
+                      cachedName="SK_LoyaltyCard"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_LoyaltyCard]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Geography]"
+                      cachedDataType="i4"
+                      cachedName="SK_Geography"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[TotalFlights]"
+                      cachedDataType="i4"
+                      cachedName="TotalFlights"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TotalFlights]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TotalFlights]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Distance]"
+                      cachedDataType="numeric"
+                      cachedName="Distance"
+                      cachedPrecision="18"
+                      cachedScale="2"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Distance]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Distance]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[PointsAccumulated]"
+                      cachedDataType="numeric"
+                      cachedName="PointsAccumulated"
+                      cachedPrecision="18"
+                      cachedScale="2"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[PointsAccumulated]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[PointsAccumulated]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[PointsRedeemed]"
+                      cachedDataType="numeric"
+                      cachedName="PointsRedeemed"
+                      cachedPrecision="18"
+                      cachedScale="2"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[PointsRedeemed]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[PointsRedeemed]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[DollarCostPointsRedeemed]"
+                      cachedDataType="numeric"
+                      cachedName="DollarCostPointsRedeemed"
+                      cachedPrecision="18"
+                      cachedScale="2"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[DollarCostPointsRedeemed]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[DollarCostPointsRedeemed]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Activity]"
+                      dataType="i4"
+                      name="SK_Activity" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Customer]"
+                      dataType="i4"
+                      name="SK_Customer" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Date]"
+                      dataType="i4"
+                      name="SK_Date" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TotalFlights]"
+                      dataType="i4"
+                      name="TotalFlights" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Distance]"
+                      dataType="numeric"
+                      name="Distance"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[PointsAccumulated]"
+                      dataType="numeric"
+                      name="PointsAccumulated"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[PointsRedeemed]"
+                      dataType="numeric"
+                      name="PointsRedeemed"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[DollarCostPointsRedeemed]"
+                      dataType="numeric"
+                      name="DollarCostPointsRedeemed"
+                      precision="18"
+                      scale="2" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_FACT_ACTIVITY\Source OLE DB"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="Source OLE DB"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT
+ISNULL(
+(SELECT TOP 1 c.SK_Customer
+FROM DWH_DB.dbo.DIM_CUSTOMER c
+WHERE c.LoyaltyNumber = f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1
+)  
+AS SK_Customer,
+ISNULL(
+(SELECT TOP 1 d.SK_Date
+FROM DWH_DB.dbo.DIM_DATE d
+WHERE d.DateValue = DATEFROMPARTS(f.Year, f.Month, 1) AND d.SK_Date &gt; 0),-1
+)  
+AS SK_Date,
+ISNULL(
+(SELECT TOP 1 c.SK_LoyaltyCard
+FROM DWH_DB.dbo.DIM_CUSTOMER c
+WHERE c.LoyaltyNumber = f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1
+)  
+AS SK_LoyaltyCard,
+ISNULL(
+(SELECT TOP 1 c.SK_Geography
+FROM DWH_DB.dbo.DIM_CUSTOMER c
+WHERE c.LoyaltyNumber = f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1
+)  
+AS SK_Geography,
+f.TotalFlights,
+f.Distance,
+f.PointsAccumulated,
+f.PointsRedeemed,
+f.DollarCostPointsRedeemed
+FROM STAGING_DB.dbo.stg_flight_activity f</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Customer]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Customer]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Customer]"
+                      name="SK_Customer"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Date]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Date]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Date]"
+                      name="SK_Date"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_LoyaltyCard]"
+                      name="SK_LoyaltyCard"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Geography]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]"
+                      name="SK_Geography"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TotalFlights]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TotalFlights]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TotalFlights]"
+                      name="TotalFlights"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Distance]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Distance]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Distance]"
+                      name="Distance"
+                      precision="18"
+                      scale="2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[PointsAccumulated]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[PointsAccumulated]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[PointsAccumulated]"
+                      name="PointsAccumulated"
+                      precision="18"
+                      scale="2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[PointsRedeemed]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[PointsRedeemed]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[PointsRedeemed]"
+                      name="PointsRedeemed"
+                      precision="18"
+                      scale="2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[DollarCostPointsRedeemed]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[DollarCostPointsRedeemed]"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[DollarCostPointsRedeemed]"
+                      name="DollarCostPointsRedeemed"
+                      precision="18"
+                      scale="2"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Customer]"
+                      dataType="i4"
+                      name="SK_Customer" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Date]"
+                      dataType="i4"
+                      name="SK_Date" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TotalFlights]"
+                      dataType="i4"
+                      name="TotalFlights" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Distance]"
+                      dataType="numeric"
+                      name="Distance"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[PointsAccumulated]"
+                      dataType="numeric"
+                      name="PointsAccumulated"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[PointsRedeemed]"
+                      dataType="numeric"
+                      name="PointsRedeemed"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[DollarCostPointsRedeemed]"
+                      dataType="numeric"
+                      name="DollarCostPointsRedeemed"
+                      precision="18"
+                      scale="2" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Customer]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Customer]"
+                      name="SK_Customer" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Date]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Date]"
+                      name="SK_Date" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_LoyaltyCard]"
+                      name="SK_LoyaltyCard" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Geography]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Geography]"
+                      name="SK_Geography" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TotalFlights]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TotalFlights]"
+                      name="TotalFlights" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Distance]"
+                      dataType="numeric"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Distance]"
+                      name="Distance"
+                      precision="18"
+                      scale="2" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[PointsAccumulated]"
+                      dataType="numeric"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[PointsAccumulated]"
+                      name="PointsAccumulated"
+                      precision="18"
+                      scale="2" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[PointsRedeemed]"
+                      dataType="numeric"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[PointsRedeemed]"
+                      name="PointsRedeemed"
+                      precision="18"
+                      scale="2" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[DollarCostPointsRedeemed]"
+                      dataType="numeric"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[DollarCostPointsRedeemed]"
+                      name="DollarCostPointsRedeemed"
+                      precision="18"
+                      scale="2" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_FACT_ACTIVITY.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_FACT_ACTIVITY\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_FACT_ACTIVITY\Source OLE DB.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
     <DTS:Executable
-      DTS:refId="Package\SQL_FACT_ACTIVITY"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{DD000003-0000-4000-8000-DD0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_FACT_SATISFACTION"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{B156110F-024F-4836-BD73-40A1CBAFD1AA}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_FACT_ACTIVITY"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_FACT_SATISFACTION"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{DD000001-0000-4000-8000-DD0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.FACT_FLIGHT_ACTIVITY (SK_Customer,SK_Date,SK_LoyaltyCard,SK_Geography,TotalFlights,Distance,PointsAccumulated,PointsRedeemed,DollarCostPointsRedeemed)&#xA;SELECT&#xA;    ISNULL((SELECT TOP 1 c.SK_Customer FROM dbo.DIM_CUSTOMER c WHERE c.LoyaltyNumber=f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 d.SK_Date FROM dbo.DIM_DATE d WHERE d.DateValue=DATEFROMPARTS(f.Year,f.Month,1) AND d.SK_Date &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 c.SK_LoyaltyCard FROM dbo.DIM_CUSTOMER c WHERE c.LoyaltyNumber=f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 c.SK_Geography FROM dbo.DIM_CUSTOMER c WHERE c.LoyaltyNumber=f.LoyaltyNumber AND c.SK_Customer &gt; 0),-1),&#xA;    f.TotalFlights, f.Distance, f.PointsAccumulated, f.PointsRedeemed, f.DollarCostPointsRedeemed&#xA;FROM STAGING_DB.dbo.stg_flight_activity f;&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="Destination OLE DB"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[FACT_PASSENGER_SATISFACTION]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">true</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Date]"
+                      cachedDataType="i4"
+                      cachedName="SK_Date"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Date]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Date]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Customer]"
+                      cachedDataType="i4"
+                      cachedName="SK_Customer"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Customer]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Customer]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Travel]"
+                      cachedDataType="i4"
+                      cachedName="SK_Travel"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Travel]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Travel]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Geography]"
+                      cachedDataType="i4"
+                      cachedName="SK_Geography"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Gender]"
+                      cachedDataType="wstr"
+                      cachedLength="20"
+                      cachedName="Gender"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Gender]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Gender]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[CustomerType]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="CustomerType"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CustomerType]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CustomerType]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Age]"
+                      cachedDataType="i4"
+                      cachedName="Age"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Age]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Age]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[FlightDistance]"
+                      cachedDataType="i4"
+                      cachedName="FlightDistance"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[FlightDistance]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[FlightDistance]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[DepartureDelay]"
+                      cachedDataType="i4"
+                      cachedName="DepartureDelay"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[DepartureDelay]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[DepartureDelay]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[ArrivalDelay]"
+                      cachedDataType="i4"
+                      cachedName="ArrivalDelay"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[ArrivalDelay]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[ArrivalDelay]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[TimeConvenience]"
+                      cachedDataType="i4"
+                      cachedName="TimeConvenience"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TimeConvenience]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TimeConvenience]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[OnlineBooking]"
+                      cachedDataType="i4"
+                      cachedName="OnlineBooking"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[OnlineBooking]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnlineBooking]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[CheckinService]"
+                      cachedDataType="i4"
+                      cachedName="CheckinService"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CheckinService]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CheckinService]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[OnlineBoarding]"
+                      cachedDataType="i4"
+                      cachedName="OnlineBoarding"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[OnlineBoarding]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnlineBoarding]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[GateLocation]"
+                      cachedDataType="i4"
+                      cachedName="GateLocation"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[GateLocation]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[GateLocation]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[OnboardService]"
+                      cachedDataType="i4"
+                      cachedName="OnboardService"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[OnboardService]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnboardService]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SeatComfort]"
+                      cachedDataType="i4"
+                      cachedName="SeatComfort"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SeatComfort]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SeatComfort]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[LegRoom]"
+                      cachedDataType="i4"
+                      cachedName="LegRoom"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[LegRoom]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[LegRoom]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Cleanliness]"
+                      cachedDataType="i4"
+                      cachedName="Cleanliness"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Cleanliness]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Cleanliness]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[FoodAndDrink]"
+                      cachedDataType="i4"
+                      cachedName="FoodAndDrink"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[FoodAndDrink]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[FoodAndDrink]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[InFlightService]"
+                      cachedDataType="i4"
+                      cachedName="InFlightService"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[InFlightService]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightService]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[InFlightWifi]"
+                      cachedDataType="i4"
+                      cachedName="InFlightWifi"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[InFlightWifi]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightWifi]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[InFlightEntertainment]"
+                      cachedDataType="i4"
+                      cachedName="InFlightEntertainment"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[InFlightEntertainment]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightEntertainment]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[BaggageHandling]"
+                      cachedDataType="i4"
+                      cachedName="BaggageHandling"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[BaggageHandling]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[BaggageHandling]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[AvgServiceScore]"
+                      cachedDataType="numeric"
+                      cachedName="AvgServiceScore"
+                      cachedPrecision="5"
+                      cachedScale="2"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[AvgServiceScore]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[AvgServiceScore]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Satisfaction]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Satisfaction"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Satisfaction]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Satisfaction]" />
+                    <inputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Satisfaction_Flag]"
+                      cachedDataType="bool"
+                      cachedName="Satisfaction_Flag"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Satisfaction_Flag]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Satisfaction_Flag]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Satisfaction]"
+                      dataType="i4"
+                      name="SK_Satisfaction" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Date]"
+                      dataType="i4"
+                      name="SK_Date" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Customer]"
+                      dataType="i4"
+                      name="SK_Customer" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Travel]"
+                      dataType="i4"
+                      name="SK_Travel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Gender]"
+                      dataType="wstr"
+                      length="20"
+                      name="Gender" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CustomerType]"
+                      dataType="wstr"
+                      length="50"
+                      name="CustomerType" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Age]"
+                      dataType="i4"
+                      name="Age" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[FlightDistance]"
+                      dataType="i4"
+                      name="FlightDistance" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[DepartureDelay]"
+                      dataType="i4"
+                      name="DepartureDelay" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[ArrivalDelay]"
+                      dataType="i4"
+                      name="ArrivalDelay" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TimeConvenience]"
+                      dataType="i4"
+                      name="TimeConvenience" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[OnlineBooking]"
+                      dataType="i4"
+                      name="OnlineBooking" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CheckinService]"
+                      dataType="i4"
+                      name="CheckinService" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[OnlineBoarding]"
+                      dataType="i4"
+                      name="OnlineBoarding" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[GateLocation]"
+                      dataType="i4"
+                      name="GateLocation" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[OnboardService]"
+                      dataType="i4"
+                      name="OnboardService" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SeatComfort]"
+                      dataType="i4"
+                      name="SeatComfort" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[LegRoom]"
+                      dataType="i4"
+                      name="LegRoom" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Cleanliness]"
+                      dataType="i4"
+                      name="Cleanliness" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[FoodAndDrink]"
+                      dataType="i4"
+                      name="FoodAndDrink" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[InFlightService]"
+                      dataType="i4"
+                      name="InFlightService" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[InFlightWifi]"
+                      dataType="i4"
+                      name="InFlightWifi" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[InFlightEntertainment]"
+                      dataType="i4"
+                      name="InFlightEntertainment" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[BaggageHandling]"
+                      dataType="i4"
+                      name="BaggageHandling" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[AvgServiceScore]"
+                      dataType="numeric"
+                      name="AvgServiceScore"
+                      precision="5"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Satisfaction]"
+                      dataType="wstr"
+                      length="50"
+                      name="Satisfaction" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Satisfaction_Flag]"
+                      dataType="bool"
+                      name="Satisfaction_Flag" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_FACT_SATISFACTION\Source OLE DB"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="Source OLE DB"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT
+    CAST(-1 AS INT) AS SK_Date,
+    CAST(-1 AS INT) AS SK_Customer,
+
+    ISNULL(
+        (
+            SELECT TOP 1 t.SK_Travel
+            FROM DWH_DB.dbo.DIM_TRAVEL t
+            WHERE t.TypeOfTravel = ISNULL(s.TypeOfTravel, N'Unknown')
+              AND t.Class        = ISNULL(s.Class, N'Unknown')
+              AND t.SK_Travel &gt; 0
+        ),
+        -1
+    ) AS SK_Travel,
+
+    CAST(-1 AS INT) AS SK_Geography,
+
+    s.Gender,
+    s.CustomerType,
+    s.Age,
+    s.FlightDistance,
+    s.DepartureDelay,
+    s.ArrivalDelay,
+    s.TimeConvenience,
+    s.OnlineBooking,
+    s.CheckinService,
+    s.OnlineBoarding,
+    s.GateLocation,
+    s.OnboardService,
+    s.SeatComfort,
+    s.LegRoom,
+    s.Cleanliness,
+    s.FoodAndDrink,
+    s.InFlightService,
+    s.InFlightWifi,
+    s.InFlightEntertainment,
+    s.BaggageHandling,
+    s.AvgServiceScore,
+    s.Satisfaction,
+    s.Satisfaction_Flag
+
+FROM STAGING_DB.dbo.stg_airline_satisfaction s;</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Date]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Date]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Date]"
+                      name="SK_Date"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Customer]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Customer]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Customer]"
+                      name="SK_Customer"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Travel]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Travel]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Travel]"
+                      name="SK_Travel"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Geography]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]"
+                      name="SK_Geography"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Gender]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Gender]"
+                      length="20"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Gender]"
+                      name="Gender"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CustomerType]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CustomerType]"
+                      length="50"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CustomerType]"
+                      name="CustomerType"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Age]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Age]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Age]"
+                      name="Age"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[FlightDistance]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[FlightDistance]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[FlightDistance]"
+                      name="FlightDistance"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[DepartureDelay]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[DepartureDelay]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[DepartureDelay]"
+                      name="DepartureDelay"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[ArrivalDelay]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[ArrivalDelay]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[ArrivalDelay]"
+                      name="ArrivalDelay"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TimeConvenience]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TimeConvenience]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TimeConvenience]"
+                      name="TimeConvenience"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnlineBooking]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[OnlineBooking]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnlineBooking]"
+                      name="OnlineBooking"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CheckinService]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CheckinService]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CheckinService]"
+                      name="CheckinService"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnlineBoarding]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[OnlineBoarding]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnlineBoarding]"
+                      name="OnlineBoarding"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[GateLocation]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[GateLocation]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[GateLocation]"
+                      name="GateLocation"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnboardService]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[OnboardService]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[OnboardService]"
+                      name="OnboardService"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SeatComfort]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SeatComfort]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SeatComfort]"
+                      name="SeatComfort"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[LegRoom]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[LegRoom]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[LegRoom]"
+                      name="LegRoom"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Cleanliness]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Cleanliness]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Cleanliness]"
+                      name="Cleanliness"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[FoodAndDrink]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[FoodAndDrink]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[FoodAndDrink]"
+                      name="FoodAndDrink"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightService]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[InFlightService]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightService]"
+                      name="InFlightService"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightWifi]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[InFlightWifi]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightWifi]"
+                      name="InFlightWifi"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightEntertainment]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[InFlightEntertainment]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[InFlightEntertainment]"
+                      name="InFlightEntertainment"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[BaggageHandling]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[BaggageHandling]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[BaggageHandling]"
+                      name="BaggageHandling"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[AvgServiceScore]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[AvgServiceScore]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[AvgServiceScore]"
+                      name="AvgServiceScore"
+                      precision="5"
+                      scale="2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Satisfaction]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Satisfaction]"
+                      length="50"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Satisfaction]"
+                      name="Satisfaction"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Satisfaction_Flag]"
+                      dataType="bool"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Satisfaction_Flag]"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Satisfaction_Flag]"
+                      name="Satisfaction_Flag"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Date]"
+                      dataType="i4"
+                      name="SK_Date" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Customer]"
+                      dataType="i4"
+                      name="SK_Customer" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Travel]"
+                      dataType="i4"
+                      name="SK_Travel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Gender]"
+                      dataType="wstr"
+                      length="20"
+                      name="Gender" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CustomerType]"
+                      dataType="wstr"
+                      length="50"
+                      name="CustomerType" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Age]"
+                      dataType="i4"
+                      name="Age" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[FlightDistance]"
+                      dataType="i4"
+                      name="FlightDistance" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[DepartureDelay]"
+                      dataType="i4"
+                      name="DepartureDelay" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[ArrivalDelay]"
+                      dataType="i4"
+                      name="ArrivalDelay" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TimeConvenience]"
+                      dataType="i4"
+                      name="TimeConvenience" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[OnlineBooking]"
+                      dataType="i4"
+                      name="OnlineBooking" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CheckinService]"
+                      dataType="i4"
+                      name="CheckinService" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[OnlineBoarding]"
+                      dataType="i4"
+                      name="OnlineBoarding" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[GateLocation]"
+                      dataType="i4"
+                      name="GateLocation" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[OnboardService]"
+                      dataType="i4"
+                      name="OnboardService" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SeatComfort]"
+                      dataType="i4"
+                      name="SeatComfort" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[LegRoom]"
+                      dataType="i4"
+                      name="LegRoom" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Cleanliness]"
+                      dataType="i4"
+                      name="Cleanliness" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[FoodAndDrink]"
+                      dataType="i4"
+                      name="FoodAndDrink" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[InFlightService]"
+                      dataType="i4"
+                      name="InFlightService" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[InFlightWifi]"
+                      dataType="i4"
+                      name="InFlightWifi" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[InFlightEntertainment]"
+                      dataType="i4"
+                      name="InFlightEntertainment" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[BaggageHandling]"
+                      dataType="i4"
+                      name="BaggageHandling" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[AvgServiceScore]"
+                      dataType="numeric"
+                      name="AvgServiceScore"
+                      precision="5"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Satisfaction]"
+                      dataType="wstr"
+                      length="50"
+                      name="Satisfaction" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Satisfaction_Flag]"
+                      dataType="bool"
+                      name="Satisfaction_Flag" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Date]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Date]"
+                      name="SK_Date" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Customer]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Customer]"
+                      name="SK_Customer" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Travel]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Travel]"
+                      name="SK_Travel" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Geography]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Geography]"
+                      name="SK_Geography" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Gender]"
+                      dataType="wstr"
+                      length="20"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Gender]"
+                      name="Gender" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CustomerType]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CustomerType]"
+                      name="CustomerType" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Age]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Age]"
+                      name="Age" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[FlightDistance]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[FlightDistance]"
+                      name="FlightDistance" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[DepartureDelay]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[DepartureDelay]"
+                      name="DepartureDelay" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ArrivalDelay]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ArrivalDelay]"
+                      name="ArrivalDelay" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TimeConvenience]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TimeConvenience]"
+                      name="TimeConvenience" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[OnlineBooking]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[OnlineBooking]"
+                      name="OnlineBooking" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CheckinService]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CheckinService]"
+                      name="CheckinService" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[OnlineBoarding]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[OnlineBoarding]"
+                      name="OnlineBoarding" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[GateLocation]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[GateLocation]"
+                      name="GateLocation" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[OnboardService]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[OnboardService]"
+                      name="OnboardService" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SeatComfort]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SeatComfort]"
+                      name="SeatComfort" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[LegRoom]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[LegRoom]"
+                      name="LegRoom" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Cleanliness]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Cleanliness]"
+                      name="Cleanliness" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[FoodAndDrink]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[FoodAndDrink]"
+                      name="FoodAndDrink" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[InFlightService]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[InFlightService]"
+                      name="InFlightService" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[InFlightWifi]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[InFlightWifi]"
+                      name="InFlightWifi" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[InFlightEntertainment]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[InFlightEntertainment]"
+                      name="InFlightEntertainment" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[BaggageHandling]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[BaggageHandling]"
+                      name="BaggageHandling" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[AvgServiceScore]"
+                      dataType="numeric"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[AvgServiceScore]"
+                      name="AvgServiceScore"
+                      precision="5"
+                      scale="2" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Satisfaction]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Satisfaction]"
+                      name="Satisfaction" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Satisfaction_Flag]"
+                      dataType="bool"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Satisfaction_Flag]"
+                      name="Satisfaction_Flag" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_FACT_SATISFACTION.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_FACT_SATISFACTION\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_FACT_SATISFACTION\Source OLE DB.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
   </DTS:Executables>
-
-  <!-- No PrecedenceConstraints: both fact tasks run in parallel -->
-
   <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
-<Objects Version="8">
-  <Package design-time-name="Package">
+<!--Cette section CDATA contient des informations sur la disposition du package. Elle comprend des informations telles que les coordonnées (x,y), la largeur et la hauteur.-->
+<!--Si vous modifiez manuellement cette section et commettez une erreur, vous pouvez la supprimer. -->
+<!--Le package pourra toujours se charger normalement, mais les informations de disposition précédente seront perdues et le concepteur réorganisera automatiquement les éléments sur l'aire de conception.-->
+<Objects
+  Version="8">
+  <!--Chaque nœud ci-dessous contiendra des propriétés qui n'affectent pas le comportement d'exécution.-->
+  <Package
+    design-time-name="Package">
     <LayoutInfo>
-      <GraphLayout Capacity="4" NumberOfVisibleColumns="4" NumberOfColumns="4">
-        <NodeLayout Size="260,42" Id="Package\SQL_FACT_SATISFACTION" TopLeft="80,60" />
-        <NodeLayout Size="260,42" Id="Package\SQL_FACT_ACTIVITY"     TopLeft="380,60" />
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
+        <NodeLayout
+          Size="221,42"
+          Id="Package\DFT_FACT_SATISFACTION"
+          TopLeft="158,154" />
+        <NodeLayout
+          Size="191,42"
+          Id="Package\DFT_FACT_ACTIVITY"
+          TopLeft="497,155" />
       </GraphLayout>
     </LayoutInfo>
   </Package>
+  <TaskHost
+    design-time-name="Package\DFT_FACT_SATISFACTION">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="157,42"
+          Id="Package\DFT_FACT_SATISFACTION\Source OLE DB"
+          TopLeft="330,109" />
+        <NodeLayout
+          Size="177,42"
+          Id="Package\DFT_FACT_SATISFACTION\Destination OLE DB"
+          TopLeft="311,219" />
+        <EdgeLayout
+          Id="Package\DFT_FACT_SATISFACTION.Paths[Sortie de source OLE DB]"
+          TopLeft="408.5,151">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-9,68"
+              Start="0,0"
+              End="-9,60.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,30" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,30"
+                    Point2="0,34"
+                    Point3="-4,34" />
+                  <mssgle:LineSegment
+                    End="-5,34" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-5,34"
+                    Point2="-9,34"
+                    Point3="-9,38" />
+                  <mssgle:LineSegment
+                    End="-9,60.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_FACT_SATISFACTION\Source OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_FACT_SATISFACTION\Destination OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\DFT_FACT_ACTIVITY">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="157,42"
+          Id="Package\DFT_FACT_ACTIVITY\Source OLE DB"
+          TopLeft="380,145" />
+        <NodeLayout
+          Size="177,42"
+          Id="Package\DFT_FACT_ACTIVITY\Destination OLE DB"
+          TopLeft="358,277" />
+        <EdgeLayout
+          Id="Package\DFT_FACT_ACTIVITY.Paths[Sortie de source OLE DB]"
+          TopLeft="458.5,187">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-12,90"
+              Start="0,0"
+              End="-12,82.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,41" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,41"
+                    Point2="0,45"
+                    Point3="-4,45" />
+                  <mssgle:LineSegment
+                    End="-8,45" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-8,45"
+                    Point2="-12,45"
+                    Point3="-12,49" />
+                  <mssgle:LineSegment
+                    End="-12,82.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_FACT_ACTIVITY\Source OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_FACT_ACTIVITY\Destination OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
 </Objects>]]></DTS:DesignTimeProperties>
-
 </DTS:Executable>

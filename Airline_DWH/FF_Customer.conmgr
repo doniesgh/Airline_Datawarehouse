@@ -1,0 +1,165 @@
+﻿<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="FF_Customer"
+  DTS:DTSID="{F9F7B471-FFA4-4284-B91E-759C60167994}"
+  DTS:Description="FF_Customer"
+  DTS:CreationName="FLATFILE">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:Format="Delimited"
+      DTS:LocaleID="1036"
+      DTS:HeaderRowDelimiter="_x000D__x000A_"
+      DTS:ColumnNamesInFirstDataRow="True"
+      DTS:RowDelimiter=""
+      DTS:TextQualifier="_x003C_none_x003E_"
+      DTS:CodePage="65001"
+      DTS:ConnectionString="C:\Users\RaedCHARRAD\Desktop\esprit\3eme\Mission entreprise 2\Airline_Datawarehouse\data\Customer Loyalty History.csv">
+      <DTS:FlatFileColumns>
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Loyalty Number"
+          DTS:DTSID="{88F5E8BD-6386-4BC3-AF56-B16D333EBD6A}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Country"
+          DTS:DTSID="{9FBE7671-1670-4D2C-838B-A0903B1D3BBF}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Province"
+          DTS:DTSID="{4C2C4FC8-DE60-4C6B-9E0F-D6680BCA3ABA}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="City"
+          DTS:DTSID="{8524BFE9-9CF3-44B0-A4BC-33B27AD29F6C}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Postal Code"
+          DTS:DTSID="{17729C79-53E3-4EAE-8630-3239DBF53E18}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Gender"
+          DTS:DTSID="{E727A3ED-C10B-4F4D-8D83-5BC278814BB4}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Education"
+          DTS:DTSID="{1DD3BD56-695F-400B-8E58-4805E505AF63}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Salary"
+          DTS:DTSID="{8B2E0747-AFD8-420B-9BF9-E2BC2B36CD9C}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Marital Status"
+          DTS:DTSID="{EF34564E-7D92-4AE2-B6A2-30F26977603F}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Loyalty Card"
+          DTS:DTSID="{5D6BF104-0789-484D-B988-E5F07F9B21DB}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="CLV"
+          DTS:DTSID="{53449B58-21A5-42FA-AD4A-FE5CF9CD8E55}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Enrollment Type"
+          DTS:DTSID="{7FB7ED29-406A-467D-A44A-C47A1890FDA9}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Enrollment Year"
+          DTS:DTSID="{B1E45D42-7C20-45F8-9290-6A4DFB8625C9}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Enrollment Month"
+          DTS:DTSID="{A43DD6C6-951A-4959-854C-440C2A91E2D6}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x002C_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Cancellation Year"
+          DTS:DTSID="{DA2E91E4-24D4-4F69-AF54-7E7F1D864750}"
+          DTS:CreationName="" />
+        <DTS:FlatFileColumn
+          DTS:ColumnType="Delimited"
+          DTS:ColumnDelimiter="_x000D__x000A_"
+          DTS:MaximumWidth="500"
+          DTS:DataType="130"
+          DTS:TextQualified="True"
+          DTS:ObjectName="Cancellation Month"
+          DTS:DTSID="{E7FE63A9-18F4-40D0-BBCE-CAA3812A053F}"
+          DTS:CreationName="" />
+      </DTS:FlatFileColumns>
+    </DTS:ConnectionManager>
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

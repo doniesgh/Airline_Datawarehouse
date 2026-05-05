@@ -1,0 +1,599 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:27:38 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{A28590C4-A7CD-4A86-97EA-FD136A7F33DD}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="03_Populate_Facts"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="2"
+  DTS:VersionGUID="{4D9603C1-AC3B-448D-BA98-36C38E9B0F46}"
+  DTS:DelayValidation="True">
+  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  <DTS:ConnectionManagers>
+
+    <!-- STAGING_DB: source data -->
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_STAGING]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{DD000001-0000-4000-8000-DD0000000001}"
+      DTS:ObjectName="Airline_STAGING">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+
+    <!-- DWH_DB: fact destinations -->
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH_DB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{DD000050-0000-4000-8000-DD0000000001}"
+      DTS:ObjectName="Airline_DWH_DB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=DWH_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+
+    <!-- ============================================================
+         DFT 1: FACT_PASSENGER_SATISFACTION  (parallel with DFT 2)
+         Source  : stg_airline_satisfaction — SK_Travel resolved in SQL
+         Transform: Derived Column adds SK_Date / SK_Customer / SK_Geography = -1
+         Dest    : DWH_DB.dbo.FACT_PASSENGER_SATISFACTION
+         ============================================================ -->
+    <DTS:Executable
+      DTS:refId="Package\DFT_FACT_SATISFACTION"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:DTSID="{DD000100-0000-4000-8000-DD0000000001}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="DFT_FACT_SATISFACTION">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline version="1">
+          <components>
+
+            <!-- OLE DB Source -->
+            <component refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction"
+              componentClassID="{657B7EBE-0A54-4C0E-A80E-7A5BD9886C25}"
+              name="SRC_stg_satisfaction" usesDispositions="true" version="7">
+              <properties>
+                <property dataType="System.Int32"  name="AccessMode">2</property>
+                <property dataType="System.String" name="SqlCommand">SELECT
+    ISNULL((SELECT TOP 1 t.SK_Travel
+            FROM DWH_DB.dbo.DIM_TRAVEL t
+            WHERE t.TypeOfTravel = ISNULL(s.TypeOfTravel,N'Unknown')
+              AND t.Class        = ISNULL(s.Class,N'Unknown')
+              AND t.SK_Travel &gt; 0), -1) AS SK_Travel,
+    s.Gender, s.CustomerType, s.Age, s.FlightDistance,
+    s.DepartureDelay, s.ArrivalDelay,
+    s.TimeConvenience, s.OnlineBooking, s.CheckinService, s.OnlineBoarding,
+    s.GateLocation, s.OnboardService, s.SeatComfort, s.LegRoom,
+    s.Cleanliness, s.FoodAndDrink, s.InFlightService, s.InFlightWifi,
+    s.InFlightEntertainment, s.BaggageHandling,
+    s.AvgServiceScore, s.Satisfaction, s.Satisfaction_Flag
+FROM dbo.stg_airline_satisfaction s</property>
+                <property dataType="System.Int32"  name="DefaultCodePage">1252</property>
+                <property dataType="System.Boolean" name="AlwaysUseDefaultCodePage">false</property>
+                <property dataType="System.Int32"  name="CommandTimeout">0</property>
+              </properties>
+              <connections>
+                <connection refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Connections[OleDbConnection]"
+                  connectionManagerID="{DD000001-0000-4000-8000-DD0000000001}"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_STAGING]"
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[SK_Travel]"
+                      dataType="i4" lineageId="601" name="SK_Travel" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[Gender]"
+                      dataType="wstr" length="50" lineageId="602" name="Gender" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[CustomerType]"
+                      dataType="wstr" length="100" lineageId="603" name="CustomerType" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[Age]"
+                      dataType="i4" lineageId="604" name="Age" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[FlightDistance]"
+                      dataType="i4" lineageId="605" name="FlightDistance" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[DepartureDelay]"
+                      dataType="i4" lineageId="606" name="DepartureDelay" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[ArrivalDelay]"
+                      dataType="i4" lineageId="607" name="ArrivalDelay" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[TimeConvenience]"
+                      dataType="i4" lineageId="608" name="TimeConvenience" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[OnlineBooking]"
+                      dataType="i4" lineageId="609" name="OnlineBooking" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[CheckinService]"
+                      dataType="i4" lineageId="610" name="CheckinService" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[OnlineBoarding]"
+                      dataType="i4" lineageId="611" name="OnlineBoarding" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[GateLocation]"
+                      dataType="i4" lineageId="612" name="GateLocation" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[OnboardService]"
+                      dataType="i4" lineageId="613" name="OnboardService" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[SeatComfort]"
+                      dataType="i4" lineageId="614" name="SeatComfort" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[LegRoom]"
+                      dataType="i4" lineageId="615" name="LegRoom" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[Cleanliness]"
+                      dataType="i4" lineageId="616" name="Cleanliness" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[FoodAndDrink]"
+                      dataType="i4" lineageId="617" name="FoodAndDrink" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[InFlightService]"
+                      dataType="i4" lineageId="618" name="InFlightService" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[InFlightWifi]"
+                      dataType="i4" lineageId="619" name="InFlightWifi" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[InFlightEntertainment]"
+                      dataType="i4" lineageId="620" name="InFlightEntertainment" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[BaggageHandling]"
+                      dataType="i4" lineageId="621" name="BaggageHandling" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[AvgServiceScore]"
+                      dataType="numeric" precision="5" scale="2" lineageId="622" name="AvgServiceScore" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[Satisfaction]"
+                      dataType="wstr" length="50" lineageId="623" name="Satisfaction" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].Columns[Satisfaction_Flag]"
+                      dataType="i4" lineageId="624" name="Satisfaction_Flag" />
+                  </outputColumns>
+                  <externalMetadataColumns isUsed="True">
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[SK_Travel]"          dataType="i4"      name="SK_Travel" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[Gender]"             dataType="wstr" length="50"  name="Gender" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[CustomerType]"       dataType="wstr" length="100" name="CustomerType" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[Age]"                dataType="i4"      name="Age" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[FlightDistance]"     dataType="i4"      name="FlightDistance" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[DepartureDelay]"     dataType="i4"      name="DepartureDelay" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[ArrivalDelay]"       dataType="i4"      name="ArrivalDelay" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[TimeConvenience]"    dataType="i4"      name="TimeConvenience" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[OnlineBooking]"      dataType="i4"      name="OnlineBooking" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[CheckinService]"     dataType="i4"      name="CheckinService" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[OnlineBoarding]"     dataType="i4"      name="OnlineBoarding" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[GateLocation]"       dataType="i4"      name="GateLocation" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[OnboardService]"     dataType="i4"      name="OnboardService" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[SeatComfort]"        dataType="i4"      name="SeatComfort" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[LegRoom]"            dataType="i4"      name="LegRoom" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[Cleanliness]"        dataType="i4"      name="Cleanliness" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[FoodAndDrink]"       dataType="i4"      name="FoodAndDrink" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[InFlightService]"    dataType="i4"      name="InFlightService" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[InFlightWifi]"       dataType="i4"      name="InFlightWifi" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[InFlightEntertainment]" dataType="i4"   name="InFlightEntertainment" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[BaggageHandling]"    dataType="i4"      name="BaggageHandling" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[AvgServiceScore]"    dataType="numeric" precision="5" scale="2" name="AvgServiceScore" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[Satisfaction]"       dataType="wstr" length="50" name="Satisfaction" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output].ExternalColumns[Satisfaction_Flag]"  dataType="i4"      name="Satisfaction_Flag" />
+                  </externalMetadataColumns>
+                </output>
+                <output refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true" name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4" lineageId="625" name="ErrorCode" specialFlags="1" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4" lineageId="626" name="ErrorColumn" specialFlags="2" />
+                  </outputColumns>
+                </output>
+              </outputs>
+              <inputs />
+            </component>
+
+            <!-- Derived Column: SK_Date / SK_Customer / SK_Geography = -1 (no date/customer key in satisfaction source) -->
+            <component refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs"
+              componentClassID="{A2034F5D-D283-4218-A4AF-AE11AD34B886}"
+              name="DC_ConstantSKs" usesDispositions="true" version="1">
+              <inputs>
+                <input refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Inputs[Derived Column Input]"
+                  name="Derived Column Input">
+                  <inputColumns />
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Output]"
+                  name="Derived Column Output">
+                  <outputColumns>
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Output].Columns[SK_Date]"
+                      dataType="i4" lineageId="631" name="SK_Date">
+                      <properties>
+                        <property dataType="System.String" name="Expression">(DT_I4)-1</property>
+                        <property dataType="System.String" name="FriendlyExpression">(DT_I4)-1</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Output].Columns[SK_Customer]"
+                      dataType="i4" lineageId="632" name="SK_Customer">
+                      <properties>
+                        <property dataType="System.String" name="Expression">(DT_I4)-1</property>
+                        <property dataType="System.String" name="FriendlyExpression">(DT_I4)-1</property>
+                      </properties>
+                    </outputColumn>
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Output].Columns[SK_Geography]"
+                      dataType="i4" lineageId="633" name="SK_Geography">
+                      <properties>
+                        <property dataType="System.String" name="Expression">(DT_I4)-1</property>
+                        <property dataType="System.String" name="FriendlyExpression">(DT_I4)-1</property>
+                      </properties>
+                    </outputColumn>
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+                <output refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Error Output]"
+                  isErrorOut="true" name="Derived Column Error Output">
+                  <outputColumns>
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Error Output].Columns[ErrorCode]"
+                      dataType="i4" lineageId="634" name="ErrorCode" specialFlags="1" />
+                    <outputColumn refId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Error Output].Columns[ErrorColumn]"
+                      dataType="i4" lineageId="635" name="ErrorColumn" specialFlags="2" />
+                  </outputColumns>
+                </output>
+              </outputs>
+            </component>
+
+            <!-- OLE DB Destination: DWH_DB.dbo.FACT_PASSENGER_SATISFACTION -->
+            <component refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION"
+              componentClassID="{7B729B0A-4EA5-4A0D-871A-B6E7618E9CFB}"
+              name="DST_FACT_SATISFACTION" usesDispositions="true" version="4">
+              <properties>
+                <property dataType="System.Int32"  name="AccessMode">3</property>
+                <property dataType="System.String" name="OpenRowset">dbo.FACT_PASSENGER_SATISFACTION</property>
+                <property dataType="System.Boolean" name="FastLoadKeepIdentity">false</property>
+                <property dataType="System.Boolean" name="FastLoadKeepNulls">true</property>
+                <property dataType="System.String" name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property dataType="System.Int32"  name="FastLoadMaxInsertCommitSize">10000</property>
+                <property dataType="System.Int32"  name="DefaultCodePage">1252</property>
+                <property dataType="System.Int32"  name="CommandTimeout">30</property>
+              </properties>
+              <connections>
+                <connection refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Connections[OleDbConnection]"
+                  connectionManagerID="{DD000050-0000-4000-8000-DD0000000001}"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH_DB]"
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input]"
+                  hasSideEffects="true" name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[SK_Date]"
+                      cachedDataType="i4" lineageId="631" name="SK_Date"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Date]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[SK_Customer]"
+                      cachedDataType="i4" lineageId="632" name="SK_Customer"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Customer]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[SK_Travel]"
+                      cachedDataType="i4" lineageId="601" name="SK_Travel"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Travel]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[SK_Geography]"
+                      cachedDataType="i4" lineageId="633" name="SK_Geography"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Geography]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[Gender]"
+                      cachedDataType="wstr" cachedLength="50" lineageId="602" name="Gender"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Gender]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[CustomerType]"
+                      cachedDataType="wstr" cachedLength="100" lineageId="603" name="CustomerType"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[CustomerType]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[Age]"
+                      cachedDataType="i4" lineageId="604" name="Age"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Age]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[FlightDistance]"
+                      cachedDataType="i4" lineageId="605" name="FlightDistance"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[FlightDistance]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[DepartureDelay]"
+                      cachedDataType="i4" lineageId="606" name="DepartureDelay"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[DepartureDelay]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[ArrivalDelay]"
+                      cachedDataType="i4" lineageId="607" name="ArrivalDelay"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[ArrivalDelay]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[TimeConvenience]"
+                      cachedDataType="i4" lineageId="608" name="TimeConvenience"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[TimeConvenience]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[OnlineBooking]"
+                      cachedDataType="i4" lineageId="609" name="OnlineBooking"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[OnlineBooking]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[CheckinService]"
+                      cachedDataType="i4" lineageId="610" name="CheckinService"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[CheckinService]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[OnlineBoarding]"
+                      cachedDataType="i4" lineageId="611" name="OnlineBoarding"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[OnlineBoarding]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[GateLocation]"
+                      cachedDataType="i4" lineageId="612" name="GateLocation"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[GateLocation]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[OnboardService]"
+                      cachedDataType="i4" lineageId="613" name="OnboardService"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[OnboardService]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[SeatComfort]"
+                      cachedDataType="i4" lineageId="614" name="SeatComfort"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SeatComfort]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[LegRoom]"
+                      cachedDataType="i4" lineageId="615" name="LegRoom"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[LegRoom]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[Cleanliness]"
+                      cachedDataType="i4" lineageId="616" name="Cleanliness"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Cleanliness]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[FoodAndDrink]"
+                      cachedDataType="i4" lineageId="617" name="FoodAndDrink"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[FoodAndDrink]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[InFlightService]"
+                      cachedDataType="i4" lineageId="618" name="InFlightService"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[InFlightService]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[InFlightWifi]"
+                      cachedDataType="i4" lineageId="619" name="InFlightWifi"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[InFlightWifi]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[InFlightEntertainment]"
+                      cachedDataType="i4" lineageId="620" name="InFlightEntertainment"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[InFlightEntertainment]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[BaggageHandling]"
+                      cachedDataType="i4" lineageId="621" name="BaggageHandling"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[BaggageHandling]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[AvgServiceScore]"
+                      cachedDataType="numeric" cachedPrecision="5" cachedScale="2" lineageId="622" name="AvgServiceScore"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[AvgServiceScore]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[Satisfaction]"
+                      cachedDataType="wstr" cachedLength="50" lineageId="623" name="Satisfaction"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Satisfaction]" />
+                    <inputColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].Columns[Satisfaction_Flag]"
+                      cachedDataType="i4" lineageId="624" name="Satisfaction_Flag"
+                      externalMetadataColumnId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Satisfaction_Flag]" />
+                  </inputColumns>
+                  <externalMetadataColumns isUsed="True">
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Date]"               dataType="i4"      name="SK_Date" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Customer]"           dataType="i4"      name="SK_Customer" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Travel]"             dataType="i4"      name="SK_Travel" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SK_Geography]"          dataType="i4"      name="SK_Geography" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Gender]"                dataType="wstr" length="50"  name="Gender" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[CustomerType]"          dataType="wstr" length="100" name="CustomerType" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Age]"                   dataType="i4"      name="Age" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[FlightDistance]"        dataType="i4"      name="FlightDistance" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[DepartureDelay]"        dataType="i4"      name="DepartureDelay" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[ArrivalDelay]"          dataType="i4"      name="ArrivalDelay" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[TimeConvenience]"       dataType="i4"      name="TimeConvenience" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[OnlineBooking]"         dataType="i4"      name="OnlineBooking" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[CheckinService]"        dataType="i4"      name="CheckinService" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[OnlineBoarding]"        dataType="i4"      name="OnlineBoarding" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[GateLocation]"          dataType="i4"      name="GateLocation" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[OnboardService]"        dataType="i4"      name="OnboardService" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[SeatComfort]"           dataType="i4"      name="SeatComfort" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[LegRoom]"               dataType="i4"      name="LegRoom" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Cleanliness]"           dataType="i4"      name="Cleanliness" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[FoodAndDrink]"          dataType="i4"      name="FoodAndDrink" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[InFlightService]"       dataType="i4"      name="InFlightService" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[InFlightWifi]"          dataType="i4"      name="InFlightWifi" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[InFlightEntertainment]" dataType="i4"      name="InFlightEntertainment" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[BaggageHandling]"       dataType="i4"      name="BaggageHandling" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[AvgServiceScore]"       dataType="numeric" precision="5" scale="2" name="AvgServiceScore" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Satisfaction]"          dataType="wstr" length="50" name="Satisfaction" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input].ExternalColumns[Satisfaction_Flag]"     dataType="i4"      name="Satisfaction_Flag" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output refId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Outputs[OLE DB Destination Error Output]"
+                  isErrorOut="true" name="OLE DB Destination Error Output" />
+              </outputs>
+            </component>
+
+          </components>
+          <paths>
+            <path refId="Package\DFT_FACT_SATISFACTION.Paths[SRC to DC_ConstantSKs]"
+              endId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Inputs[Derived Column Input]"
+              name="SRC to DC_ConstantSKs"
+              startId="Package\DFT_FACT_SATISFACTION\SRC_stg_satisfaction.Outputs[OLE DB Source Output]" />
+            <path refId="Package\DFT_FACT_SATISFACTION.Paths[DC_ConstantSKs to DST]"
+              endId="Package\DFT_FACT_SATISFACTION\DST_FACT_SATISFACTION.Inputs[OLE DB Destination Input]"
+              name="DC_ConstantSKs to DST"
+              startId="Package\DFT_FACT_SATISFACTION\DC_ConstantSKs.Outputs[Derived Column Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- ============================================================
+         DFT 2: FACT_FLIGHT_ACTIVITY  (parallel with DFT 1)
+         Source  : stg_flight_activity — all SKs resolved via SQL subqueries
+         Dest    : DWH_DB.dbo.FACT_FLIGHT_ACTIVITY
+         ============================================================ -->
+    <DTS:Executable
+      DTS:refId="Package\DFT_FACT_ACTIVITY"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:DTSID="{DD000200-0000-4000-8000-DD0000000001}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="DFT_FACT_ACTIVITY">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline version="1">
+          <components>
+
+            <component refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity"
+              componentClassID="{657B7EBE-0A54-4C0E-A80E-7A5BD9886C25}"
+              name="SRC_stg_activity" usesDispositions="true" version="7">
+              <properties>
+                <property dataType="System.Int32"  name="AccessMode">2</property>
+                <property dataType="System.String" name="SqlCommand">SELECT
+    ISNULL((SELECT TOP 1 c.SK_Customer
+            FROM DWH_DB.dbo.DIM_CUSTOMER c
+            WHERE c.LoyaltyNumber = f.LoyaltyNumber AND c.SK_Customer &gt; 0), -1) AS SK_Customer,
+    ISNULL((SELECT TOP 1 d.SK_Date
+            FROM DWH_DB.dbo.DIM_DATE d
+            WHERE d.DateValue = DATEFROMPARTS(f.Year, f.Month, 1) AND d.SK_Date &gt; 0), -1) AS SK_Date,
+    ISNULL((SELECT TOP 1 c.SK_LoyaltyCard
+            FROM DWH_DB.dbo.DIM_CUSTOMER c
+            WHERE c.LoyaltyNumber = f.LoyaltyNumber AND c.SK_Customer &gt; 0), -1) AS SK_LoyaltyCard,
+    ISNULL((SELECT TOP 1 c.SK_Geography
+            FROM DWH_DB.dbo.DIM_CUSTOMER c
+            WHERE c.LoyaltyNumber = f.LoyaltyNumber AND c.SK_Customer &gt; 0), -1) AS SK_Geography,
+    f.TotalFlights,
+    f.Distance,
+    f.PointsAccumulated,
+    f.PointsRedeemed,
+    f.DollarCostPointsRedeemed
+FROM dbo.stg_flight_activity f</property>
+                <property dataType="System.Int32"  name="DefaultCodePage">1252</property>
+                <property dataType="System.Boolean" name="AlwaysUseDefaultCodePage">false</property>
+                <property dataType="System.Int32"  name="CommandTimeout">0</property>
+              </properties>
+              <connections>
+                <connection refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Connections[OleDbConnection]"
+                  connectionManagerID="{DD000001-0000-4000-8000-DD0000000001}"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_STAGING]"
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[SK_Customer]"
+                      dataType="i4" lineageId="701" name="SK_Customer" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[SK_Date]"
+                      dataType="i4" lineageId="702" name="SK_Date" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[SK_LoyaltyCard]"
+                      dataType="i4" lineageId="703" name="SK_LoyaltyCard" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[SK_Geography]"
+                      dataType="i4" lineageId="704" name="SK_Geography" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[TotalFlights]"
+                      dataType="i4" lineageId="705" name="TotalFlights" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[Distance]"
+                      dataType="numeric" precision="18" scale="2" lineageId="706" name="Distance" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[PointsAccumulated]"
+                      dataType="numeric" precision="18" scale="2" lineageId="707" name="PointsAccumulated" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[PointsRedeemed]"
+                      dataType="numeric" precision="18" scale="2" lineageId="708" name="PointsRedeemed" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].Columns[DollarCostPointsRedeemed]"
+                      dataType="numeric" precision="18" scale="2" lineageId="709" name="DollarCostPointsRedeemed" />
+                  </outputColumns>
+                  <externalMetadataColumns isUsed="True">
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[SK_Customer]"             dataType="i4"      name="SK_Customer" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[SK_Date]"                 dataType="i4"      name="SK_Date" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[SK_LoyaltyCard]"          dataType="i4"      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[SK_Geography]"            dataType="i4"      name="SK_Geography" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[TotalFlights]"            dataType="i4"      name="TotalFlights" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[Distance]"                dataType="numeric" precision="18" scale="2" name="Distance" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[PointsAccumulated]"       dataType="numeric" precision="18" scale="2" name="PointsAccumulated" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[PointsRedeemed]"          dataType="numeric" precision="18" scale="2" name="PointsRedeemed" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output].ExternalColumns[DollarCostPointsRedeemed]" dataType="numeric" precision="18" scale="2" name="DollarCostPointsRedeemed" />
+                  </externalMetadataColumns>
+                </output>
+                <output refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true" name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4" lineageId="710" name="ErrorCode" specialFlags="1" />
+                    <outputColumn refId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4" lineageId="711" name="ErrorColumn" specialFlags="2" />
+                  </outputColumns>
+                </output>
+              </outputs>
+              <inputs />
+            </component>
+
+            <component refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY"
+              componentClassID="{7B729B0A-4EA5-4A0D-871A-B6E7618E9CFB}"
+              name="DST_FACT_ACTIVITY" usesDispositions="true" version="4">
+              <properties>
+                <property dataType="System.Int32"  name="AccessMode">3</property>
+                <property dataType="System.String" name="OpenRowset">dbo.FACT_FLIGHT_ACTIVITY</property>
+                <property dataType="System.Boolean" name="FastLoadKeepIdentity">false</property>
+                <property dataType="System.Boolean" name="FastLoadKeepNulls">true</property>
+                <property dataType="System.String" name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property dataType="System.Int32"  name="FastLoadMaxInsertCommitSize">10000</property>
+                <property dataType="System.Int32"  name="DefaultCodePage">1252</property>
+                <property dataType="System.Int32"  name="CommandTimeout">30</property>
+              </properties>
+              <connections>
+                <connection refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Connections[OleDbConnection]"
+                  connectionManagerID="{DD000050-0000-4000-8000-DD0000000001}"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH_DB]"
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input]"
+                  hasSideEffects="true" name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[SK_Customer]"
+                      cachedDataType="i4" lineageId="701" name="SK_Customer"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_Customer]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[SK_Date]"
+                      cachedDataType="i4" lineageId="702" name="SK_Date"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_Date]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[SK_LoyaltyCard]"
+                      cachedDataType="i4" lineageId="703" name="SK_LoyaltyCard"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_LoyaltyCard]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[SK_Geography]"
+                      cachedDataType="i4" lineageId="704" name="SK_Geography"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_Geography]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[TotalFlights]"
+                      cachedDataType="i4" lineageId="705" name="TotalFlights"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[TotalFlights]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[Distance]"
+                      cachedDataType="numeric" cachedPrecision="18" cachedScale="2" lineageId="706" name="Distance"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[Distance]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[PointsAccumulated]"
+                      cachedDataType="numeric" cachedPrecision="18" cachedScale="2" lineageId="707" name="PointsAccumulated"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[PointsAccumulated]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[PointsRedeemed]"
+                      cachedDataType="numeric" cachedPrecision="18" cachedScale="2" lineageId="708" name="PointsRedeemed"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[PointsRedeemed]" />
+                    <inputColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].Columns[DollarCostPointsRedeemed]"
+                      cachedDataType="numeric" cachedPrecision="18" cachedScale="2" lineageId="709" name="DollarCostPointsRedeemed"
+                      externalMetadataColumnId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[DollarCostPointsRedeemed]" />
+                  </inputColumns>
+                  <externalMetadataColumns isUsed="True">
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_Customer]"             dataType="i4"      name="SK_Customer" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_Date]"                 dataType="i4"      name="SK_Date" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_LoyaltyCard]"          dataType="i4"      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[SK_Geography]"            dataType="i4"      name="SK_Geography" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[TotalFlights]"            dataType="i4"      name="TotalFlights" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[Distance]"                dataType="numeric" precision="18" scale="2" name="Distance" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[PointsAccumulated]"       dataType="numeric" precision="18" scale="2" name="PointsAccumulated" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[PointsRedeemed]"          dataType="numeric" precision="18" scale="2" name="PointsRedeemed" />
+                    <externalMetadataColumn refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input].ExternalColumns[DollarCostPointsRedeemed]" dataType="numeric" precision="18" scale="2" name="DollarCostPointsRedeemed" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output refId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Outputs[OLE DB Destination Error Output]"
+                  isErrorOut="true" name="OLE DB Destination Error Output" />
+              </outputs>
+            </component>
+
+          </components>
+          <paths>
+            <path refId="Package\DFT_FACT_ACTIVITY.Paths[SRC to DST]"
+              endId="Package\DFT_FACT_ACTIVITY\DST_FACT_ACTIVITY.Inputs[OLE DB Destination Input]"
+              name="SRC to DST"
+              startId="Package\DFT_FACT_ACTIVITY\SRC_stg_activity.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+  </DTS:Executables>
+
+  <!-- No PrecedenceConstraints: both fact DFTs run in parallel -->
+
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout Capacity="4" NumberOfVisibleColumns="4" NumberOfColumns="4">
+        <NodeLayout Size="260,42" Id="Package\DFT_FACT_SATISFACTION" TopLeft="80,60" />
+        <NodeLayout Size="260,42" Id="Package\DFT_FACT_ACTIVITY"     TopLeft="380,60" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+
+</DTS:Executable>

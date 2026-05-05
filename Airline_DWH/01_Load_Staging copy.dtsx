@@ -1,0 +1,331 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="4/24/2026 3:29:35 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="MEA-JJG4XL3"
+  DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DTSID="{B9CA8127-7A79-4CCB-8E60-4247F6BB7924}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="17.0.1016.0"
+  DTS:LocaleID="1036"
+  DTS:ObjectName="01_Load_Staging"
+  DTS:PackageType="5"
+  DTS:ProtectionLevel="0"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{5B89E5F3-6CA1-40A2-8EA9-453C8599D934}"
+  DTS:DelayValidation="True">
+  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Airline_DWH]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{BB000001-0000-4000-8000-BB0000000001}"
+      DTS:ObjectName="Airline_DWH">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectRetryCount="1"
+          DTS:ConnectRetryInterval="5"
+          DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=STAGING_DB;Provider=MSOLEDBSQL.1;Persist Security Info=False;Integrated Security=SSPI;Auto Translate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+
+    <!-- ============================================================ -->
+    <!-- TASK 1: Create raw landing tables + truncate typed staging   -->
+    <!-- ============================================================ -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Prepare_Staging"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000002-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Prepare_Staging"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [STAGING_DB];&#xA;-- Drop raw tables from any prior run&#xA;IF OBJECT_ID(N'dbo.stg_raw_satisfaction') IS NOT NULL DROP TABLE dbo.stg_raw_satisfaction;&#xA;IF OBJECT_ID(N'dbo.stg_raw_flight_activity') IS NOT NULL DROP TABLE dbo.stg_raw_flight_activity;&#xA;IF OBJECT_ID(N'dbo.stg_raw_customer_loyalty') IS NOT NULL DROP TABLE dbo.stg_raw_customer_loyalty;&#xA;IF OBJECT_ID(N'dbo.stg_raw_date') IS NOT NULL DROP TABLE dbo.stg_raw_date;&#xA;-- Truncate typed staging (they exist from 00_Create_Database)&#xA;TRUNCATE TABLE dbo.stg_airline_satisfaction;&#xA;TRUNCATE TABLE dbo.stg_flight_activity;&#xA;TRUNCATE TABLE dbo.stg_customer_loyalty;&#xA;TRUNCATE TABLE dbo.stg_date;&#xA;-- Drop any NC indexes left from prior run&#xA;IF EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_stg_sat_id') DROP INDEX IX_stg_sat_id ON dbo.stg_airline_satisfaction;&#xA;IF EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_stg_activity_loyalty') DROP INDEX IX_stg_activity_loyalty ON dbo.stg_flight_activity;&#xA;IF EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_stg_customer_loyalty') DROP INDEX IX_stg_customer_loyalty ON dbo.stg_customer_loyalty;&#xA;IF EXISTS (SELECT 1 FROM sys.indexes WHERE name=N'IX_stg_date_value') DROP INDEX IX_stg_date_value ON dbo.stg_date;&#xA;-- Create raw landing tables (all NVARCHAR - accept any raw CSV data)&#xA;CREATE TABLE dbo.stg_raw_satisfaction (&#xA;    raw_ID NVARCHAR(20), raw_Gender NVARCHAR(50), raw_Age NVARCHAR(20),&#xA;    raw_CustomerType NVARCHAR(100), raw_TypeOfTravel NVARCHAR(100), raw_Class NVARCHAR(100),&#xA;    raw_FlightDistance NVARCHAR(20), raw_DepartureDelay NVARCHAR(20), raw_ArrivalDelay NVARCHAR(20),&#xA;    raw_TimeConvenience NVARCHAR(20), raw_OnlineBooking NVARCHAR(20), raw_CheckinService NVARCHAR(20),&#xA;    raw_OnlineBoarding NVARCHAR(20), raw_GateLocation NVARCHAR(20), raw_OnboardService NVARCHAR(20),&#xA;    raw_SeatComfort NVARCHAR(20), raw_LegRoom NVARCHAR(20), raw_Cleanliness NVARCHAR(20),&#xA;    raw_FoodAndDrink NVARCHAR(20), raw_InFlightService NVARCHAR(20), raw_InFlightWifi NVARCHAR(20),&#xA;    raw_InFlightEntertainment NVARCHAR(20), raw_BaggageHandling NVARCHAR(20), raw_Satisfaction NVARCHAR(50)&#xA;);&#xA;CREATE TABLE dbo.stg_raw_flight_activity (&#xA;    raw_LoyaltyNumber NVARCHAR(50), raw_Year NVARCHAR(20), raw_Month NVARCHAR(20),&#xA;    raw_TotalFlights NVARCHAR(20), raw_Distance NVARCHAR(30), raw_PointsAccumulated NVARCHAR(30),&#xA;    raw_PointsRedeemed NVARCHAR(30), raw_DollarCostPointsRedeemed NVARCHAR(30)&#xA;);&#xA;CREATE TABLE dbo.stg_raw_customer_loyalty (&#xA;    raw_LoyaltyNumber NVARCHAR(50), raw_Country NVARCHAR(100), raw_Province NVARCHAR(100),&#xA;    raw_City NVARCHAR(100), raw_PostalCode NVARCHAR(20), raw_Gender NVARCHAR(20),&#xA;    raw_Education NVARCHAR(100), raw_Salary NVARCHAR(50), raw_MaritalStatus NVARCHAR(50),&#xA;    raw_LoyaltyCard NVARCHAR(50), raw_CLV NVARCHAR(50), raw_EnrollmentType NVARCHAR(50),&#xA;    raw_EnrollmentYear NVARCHAR(20), raw_EnrollmentMonth NVARCHAR(20),&#xA;    raw_CancellationYear NVARCHAR(20), raw_CancellationMonth NVARCHAR(20)&#xA;);&#xA;CREATE TABLE dbo.stg_raw_date (&#xA;    raw_Date NVARCHAR(30), raw_StartOfYear NVARCHAR(30),&#xA;    raw_StartOfQuarter NVARCHAR(30), raw_StartOfMonth NVARCHAR(30)&#xA;);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- ============================================================ -->
+    <!-- TASKS 2-5: BULK INSERT into raw tables (all 4 PARALLEL)      -->
+    <!-- ============================================================ -->
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_BulkLoad_Satisfaction"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000003-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_BulkLoad_Satisfaction"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;BULK INSERT dbo.stg_raw_satisfaction&#xA;FROM 'C:\Users\RaedCHARRAD\Desktop\esprit\3eme\Mission entreprise 2\Airline_Datawarehouse\data\airline_passenger_satisfaction.csv'&#xA;WITH (FIRSTROW=2, FIELDTERMINATOR=',', ROWTERMINATOR='\n', CODEPAGE='65001', FIELDQUOTE='&quot;', TABLOCK);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_BulkLoad_Activity"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000004-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_BulkLoad_Activity"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;BULK INSERT dbo.stg_raw_flight_activity&#xA;FROM 'C:\Users\RaedCHARRAD\Desktop\esprit\3eme\Mission entreprise 2\Airline_Datawarehouse\data\Customer Flight Activity.csv'&#xA;WITH (FIRSTROW=2, FIELDTERMINATOR=',', ROWTERMINATOR='\n', CODEPAGE='65001', FIELDQUOTE='&quot;', TABLOCK);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_BulkLoad_Customer"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000005-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_BulkLoad_Customer"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;BULK INSERT dbo.stg_raw_customer_loyalty&#xA;FROM 'C:\Users\RaedCHARRAD\Desktop\esprit\3eme\Mission entreprise 2\Airline_Datawarehouse\data\Customer Loyalty History.csv'&#xA;WITH (FIRSTROW=2, FIELDTERMINATOR=',', ROWTERMINATOR='\n', CODEPAGE='65001', FIELDQUOTE='&quot;', TABLOCK);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_BulkLoad_Date"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000006-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_BulkLoad_Date"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;BULK INSERT dbo.stg_raw_date&#xA;FROM 'C:\Users\RaedCHARRAD\Desktop\esprit\3eme\Mission entreprise 2\Airline_Datawarehouse\data\Calendar.csv'&#xA;WITH (FIRSTROW=2, FIELDTERMINATOR=',', ROWTERMINATOR='\n', CODEPAGE='65001', FIELDQUOTE='&quot;', TABLOCK);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- ============================================================ -->
+    <!-- TASKS 6-9: TRANSFORM raw → typed staging (each after its     -->
+    <!-- corresponding BULK INSERT, all 4 can run in parallel)        -->
+    <!-- ============================================================ -->
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_Transform_Satisfaction"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000007-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Transform_Satisfaction"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;-- Clean, type-cast, compute AvgServiceScore (avg of 14 service dims) and binary Satisfaction_Flag&#xA;INSERT INTO dbo.stg_airline_satisfaction (&#xA;    ID, Gender, Age, CustomerType, TypeOfTravel, Class, FlightDistance,&#xA;    DepartureDelay, ArrivalDelay,&#xA;    TimeConvenience, OnlineBooking, CheckinService, OnlineBoarding, GateLocation,&#xA;    OnboardService, SeatComfort, LegRoom, Cleanliness, FoodAndDrink,&#xA;    InFlightService, InFlightWifi, InFlightEntertainment, BaggageHandling,&#xA;    AvgServiceScore, Satisfaction, Satisfaction_Flag&#xA;)&#xA;SELECT&#xA;    TRY_CAST(LTRIM(RTRIM(raw_ID)) AS INT),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Gender)),N''),N'Unknown'),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_Age)) AS INT),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_CustomerType)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_TypeOfTravel)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Class)),N''),N'Unknown'),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_FlightDistance)) AS INT),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_DepartureDelay)),N'') AS INT),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_ArrivalDelay)),N'') AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_TimeConvenience)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_OnlineBooking)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_CheckinService)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_OnlineBoarding)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_GateLocation)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_OnboardService)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_SeatComfort)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_LegRoom)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_Cleanliness)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_FoodAndDrink)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_InFlightService)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_InFlightWifi)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_InFlightEntertainment)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_BaggageHandling)) AS INT),&#xA;    -- AvgServiceScore: mean of 14 service rating columns (all 1-5 scale)&#xA;    CAST((&#xA;        TRY_CAST(LTRIM(RTRIM(raw_TimeConvenience)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_OnlineBooking)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_CheckinService)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_OnlineBoarding)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_GateLocation)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_OnboardService)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_SeatComfort)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_LegRoom)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_Cleanliness)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_FoodAndDrink)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_InFlightService)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_InFlightWifi)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_InFlightEntertainment)) AS INT) +&#xA;        TRY_CAST(LTRIM(RTRIM(raw_BaggageHandling)) AS INT)&#xA;    ) AS DECIMAL(5,2)) / 14.0,&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Satisfaction)),N''),N'Unknown'),&#xA;    -- Binary encode: 1 = satisfied, 0 = neutral or dissatisfied&#xA;    CASE WHEN LOWER(LTRIM(RTRIM(raw_Satisfaction)))=N'satisfied' THEN 1 ELSE 0 END&#xA;FROM dbo.stg_raw_satisfaction&#xA;WHERE NULLIF(LTRIM(RTRIM(raw_ID)),N'') IS NOT NULL;"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_Transform_Activity"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000008-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Transform_Activity"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;INSERT INTO dbo.stg_flight_activity (LoyaltyNumber,Year,Month,TotalFlights,Distance,PointsAccumulated,PointsRedeemed,DollarCostPointsRedeemed)&#xA;SELECT&#xA;    LTRIM(RTRIM(raw_LoyaltyNumber)),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_Year)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_Month)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_TotalFlights)) AS INT),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_Distance)),N'') AS DECIMAL(18,2)),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_PointsAccumulated)),N'') AS DECIMAL(18,2)),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_PointsRedeemed)),N'') AS DECIMAL(18,2)),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_DollarCostPointsRedeemed)),N'') AS DECIMAL(18,2))&#xA;FROM dbo.stg_raw_flight_activity&#xA;WHERE NULLIF(LTRIM(RTRIM(raw_LoyaltyNumber)),N'') IS NOT NULL;"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_Transform_Customer"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000009-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Transform_Customer"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;INSERT INTO dbo.stg_customer_loyalty (LoyaltyNumber,Country,Province,City,PostalCode,Gender,Education,Salary,MaritalStatus,LoyaltyCard,CLV,EnrollmentType,EnrollmentYear,EnrollmentMonth,CancellationYear,CancellationMonth)&#xA;SELECT&#xA;    LTRIM(RTRIM(raw_LoyaltyNumber)),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Country)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Province)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_City)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_PostalCode)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Gender)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Education)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_Salary)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_MaritalStatus)),N''),N'Unknown'),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_LoyaltyCard)),N''),N'Unknown'),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_CLV)),N'') AS DECIMAL(18,2)),&#xA;    ISNULL(NULLIF(LTRIM(RTRIM(raw_EnrollmentType)),N''),N'Unknown'),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_EnrollmentYear)) AS INT),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_EnrollmentMonth)) AS INT),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_CancellationYear)),N'') AS INT),&#xA;    TRY_CAST(NULLIF(LTRIM(RTRIM(raw_CancellationMonth)),N'') AS INT)&#xA;FROM dbo.stg_raw_customer_loyalty&#xA;WHERE NULLIF(LTRIM(RTRIM(raw_LoyaltyNumber)),N'') IS NOT NULL;"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <DTS:Executable
+      DTS:refId="Package\SQL_Transform_Date"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000010-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Transform_Date"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;INSERT INTO dbo.stg_date (DateValue,StartOfYear,StartOfQuarter,StartOfMonth)&#xA;SELECT&#xA;    TRY_CAST(LTRIM(RTRIM(raw_Date)) AS DATE),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_StartOfYear)) AS DATE),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_StartOfQuarter)) AS DATE),&#xA;    TRY_CAST(LTRIM(RTRIM(raw_StartOfMonth)) AS DATE)&#xA;FROM dbo.stg_raw_date&#xA;WHERE TRY_CAST(LTRIM(RTRIM(raw_Date)) AS DATE) IS NOT NULL;"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- ============================================================ -->
+    <!-- TASK 10: Drop raw tables, build NC indexes + update stats    -->
+    <!-- (runs after all 4 transforms complete)                       -->
+    <!-- ============================================================ -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Rebuild_Staging"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000011-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Rebuild_Staging"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;-- Drop raw landing tables (no longer needed)&#xA;IF OBJECT_ID(N'dbo.stg_raw_satisfaction') IS NOT NULL DROP TABLE dbo.stg_raw_satisfaction;&#xA;IF OBJECT_ID(N'dbo.stg_raw_flight_activity') IS NOT NULL DROP TABLE dbo.stg_raw_flight_activity;&#xA;IF OBJECT_ID(N'dbo.stg_raw_customer_loyalty') IS NOT NULL DROP TABLE dbo.stg_raw_customer_loyalty;&#xA;IF OBJECT_ID(N'dbo.stg_raw_date') IS NOT NULL DROP TABLE dbo.stg_raw_date;&#xA;-- Build NC indexes on typed staging to speed dimension lookups&#xA;CREATE NONCLUSTERED INDEX IX_stg_sat_id ON dbo.stg_airline_satisfaction (ID)&#xA;    INCLUDE (TypeOfTravel,Class,Satisfaction_Flag,AvgServiceScore) WITH (FILLFACTOR=95);&#xA;CREATE NONCLUSTERED INDEX IX_stg_activity_loyalty ON dbo.stg_flight_activity (LoyaltyNumber)&#xA;    INCLUDE (Year,Month,TotalFlights,Distance,PointsAccumulated) WITH (FILLFACTOR=95);&#xA;CREATE NONCLUSTERED INDEX IX_stg_customer_loyalty ON dbo.stg_customer_loyalty (LoyaltyNumber)&#xA;    INCLUDE (LoyaltyCard,Country,Province,City,PostalCode) WITH (FILLFACTOR=95);&#xA;CREATE NONCLUSTERED INDEX IX_stg_date_value ON dbo.stg_date (DateValue)&#xA;    INCLUDE (StartOfYear,StartOfQuarter,StartOfMonth) WITH (FILLFACTOR=95);&#xA;-- Update statistics for optimal query plans during DIM/FACT loads&#xA;UPDATE STATISTICS dbo.stg_airline_satisfaction WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.stg_flight_activity WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.stg_customer_loyalty WITH SAMPLE 50 PERCENT;&#xA;UPDATE STATISTICS dbo.stg_date WITH SAMPLE 50 PERCENT;"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- ============================================================ -->
+    <!-- TASK 11: Validate all staging tables have rows               -->
+    <!-- ============================================================ -->
+    <DTS:Executable
+      DTS:refId="Package\SQL_Validate_Staging"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:DTSID="{BB000012-0000-4000-8000-BB0000000001}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="SQL_Validate_Staging"
+      DTS:TaskContact="Execute SQL Task">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BB000001-0000-4000-8000-BB0000000001}"
+          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;DECLARE @sat INT,@act INT,@cust INT,@dt INT;&#xA;SELECT @sat=COUNT(*) FROM dbo.stg_airline_satisfaction;&#xA;SELECT @act=COUNT(*) FROM dbo.stg_flight_activity;&#xA;SELECT @cust=COUNT(*) FROM dbo.stg_customer_loyalty;&#xA;SELECT @dt=COUNT(*) FROM dbo.stg_date;&#xA;IF @sat=0 RAISERROR(N'STAGING VALIDATION FAILED: stg_airline_satisfaction is empty!',16,1);&#xA;IF @act=0 RAISERROR(N'STAGING VALIDATION FAILED: stg_flight_activity is empty!',16,1);&#xA;IF @cust=0 RAISERROR(N'STAGING VALIDATION FAILED: stg_customer_loyalty is empty!',16,1);&#xA;IF @dt=0 RAISERROR(N'STAGING VALIDATION FAILED: stg_date is empty!',16,1);&#xA;PRINT CONCAT(N'Staging OK | Satisfaction:',@sat,N' Activity:',@act,N' Customer:',@cust,N' Date:',@dt);"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+  </DTS:Executables>
+
+  <!-- FLOW:
+    Prepare → [BulkLoad_Sat ∥ BulkLoad_Act ∥ BulkLoad_Cust ∥ BulkLoad_Date]
+    BulkLoad_Sat  → Transform_Sat  ─┐
+    BulkLoad_Act  → Transform_Act  ─┤
+    BulkLoad_Cust → Transform_Cust ─┤→ Rebuild_Staging → Validate_Staging
+    BulkLoad_Date → Transform_Date ─┘
+  -->
+  <DTS:PrecedenceConstraints>
+    <!-- Prepare → 4 parallel BulkLoads -->
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Prep_to_BulkSat]"
+      DTS:CreationName="" DTS:DTSID="{BB001001-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Prepare_Staging" DTS:LogicalAnd="True"
+      DTS:ObjectName="Prep_to_BulkSat" DTS:To="Package\SQL_BulkLoad_Satisfaction" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Prep_to_BulkAct]"
+      DTS:CreationName="" DTS:DTSID="{BB001002-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Prepare_Staging" DTS:LogicalAnd="True"
+      DTS:ObjectName="Prep_to_BulkAct" DTS:To="Package\SQL_BulkLoad_Activity" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Prep_to_BulkCust]"
+      DTS:CreationName="" DTS:DTSID="{BB001003-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Prepare_Staging" DTS:LogicalAnd="True"
+      DTS:ObjectName="Prep_to_BulkCust" DTS:To="Package\SQL_BulkLoad_Customer" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Prep_to_BulkDate]"
+      DTS:CreationName="" DTS:DTSID="{BB001004-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Prepare_Staging" DTS:LogicalAnd="True"
+      DTS:ObjectName="Prep_to_BulkDate" DTS:To="Package\SQL_BulkLoad_Date" />
+    <!-- Each BulkLoad → its Transform -->
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[BulkSat_to_TrSat]"
+      DTS:CreationName="" DTS:DTSID="{BB001005-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_BulkLoad_Satisfaction" DTS:LogicalAnd="True"
+      DTS:ObjectName="BulkSat_to_TrSat" DTS:To="Package\SQL_Transform_Satisfaction" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[BulkAct_to_TrAct]"
+      DTS:CreationName="" DTS:DTSID="{BB001006-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_BulkLoad_Activity" DTS:LogicalAnd="True"
+      DTS:ObjectName="BulkAct_to_TrAct" DTS:To="Package\SQL_Transform_Activity" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[BulkCust_to_TrCust]"
+      DTS:CreationName="" DTS:DTSID="{BB001007-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_BulkLoad_Customer" DTS:LogicalAnd="True"
+      DTS:ObjectName="BulkCust_to_TrCust" DTS:To="Package\SQL_Transform_Customer" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[BulkDate_to_TrDate]"
+      DTS:CreationName="" DTS:DTSID="{BB001008-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_BulkLoad_Date" DTS:LogicalAnd="True"
+      DTS:ObjectName="BulkDate_to_TrDate" DTS:To="Package\SQL_Transform_Date" />
+    <!-- All 4 Transforms → Rebuild (LogicalAnd=True = wait for ALL 4) -->
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[TrSat_to_Rebuild]"
+      DTS:CreationName="" DTS:DTSID="{BB001009-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Transform_Satisfaction" DTS:LogicalAnd="True"
+      DTS:ObjectName="TrSat_to_Rebuild" DTS:To="Package\SQL_Rebuild_Staging" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[TrAct_to_Rebuild]"
+      DTS:CreationName="" DTS:DTSID="{BB001010-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Transform_Activity" DTS:LogicalAnd="True"
+      DTS:ObjectName="TrAct_to_Rebuild" DTS:To="Package\SQL_Rebuild_Staging" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[TrCust_to_Rebuild]"
+      DTS:CreationName="" DTS:DTSID="{BB001011-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Transform_Customer" DTS:LogicalAnd="True"
+      DTS:ObjectName="TrCust_to_Rebuild" DTS:To="Package\SQL_Rebuild_Staging" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[TrDate_to_Rebuild]"
+      DTS:CreationName="" DTS:DTSID="{BB001012-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Transform_Date" DTS:LogicalAnd="True"
+      DTS:ObjectName="TrDate_to_Rebuild" DTS:To="Package\SQL_Rebuild_Staging" />
+    <!-- Rebuild → Validate -->
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Rebuild_to_Validate]"
+      DTS:CreationName="" DTS:DTSID="{BB001013-0000-4000-8000-BB0000000001}"
+      DTS:From="Package\SQL_Rebuild_Staging" DTS:LogicalAnd="True"
+      DTS:ObjectName="Rebuild_to_Validate" DTS:To="Package\SQL_Validate_Staging" />
+  </DTS:PrecedenceConstraints>
+
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout Capacity="16" NumberOfVisibleColumns="4" NumberOfColumns="4">
+        <NodeLayout Size="260,42" Id="Package\SQL_Prepare_Staging"       TopLeft="370,20" />
+        <NodeLayout Size="200,42" Id="Package\SQL_BulkLoad_Satisfaction" TopLeft="60,100" />
+        <NodeLayout Size="200,42" Id="Package\SQL_BulkLoad_Activity"     TopLeft="280,100" />
+        <NodeLayout Size="200,42" Id="Package\SQL_BulkLoad_Customer"     TopLeft="500,100" />
+        <NodeLayout Size="200,42" Id="Package\SQL_BulkLoad_Date"         TopLeft="720,100" />
+        <NodeLayout Size="200,42" Id="Package\SQL_Transform_Satisfaction" TopLeft="60,180" />
+        <NodeLayout Size="200,42" Id="Package\SQL_Transform_Activity"    TopLeft="280,180" />
+        <NodeLayout Size="200,42" Id="Package\SQL_Transform_Customer"    TopLeft="500,180" />
+        <NodeLayout Size="200,42" Id="Package\SQL_Transform_Date"        TopLeft="720,180" />
+        <NodeLayout Size="260,42" Id="Package\SQL_Rebuild_Staging"       TopLeft="370,260" />
+        <NodeLayout Size="260,42" Id="Package\SQL_Validate_Staging"      TopLeft="370,340" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+
+</DTS:Executable>

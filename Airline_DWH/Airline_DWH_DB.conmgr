@@ -1,0 +1,12 @@
+﻿<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="MEA-JJG4XL3_DEV3.DWH_DB"
+  DTS:DTSID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=MEA-JJG4XL3\DEV3;Initial Catalog=DWH_DB;Provider=MSOLEDBSQL.1;Integrated Security=SSPI;Application Name=SSIS-Airline_DWH-{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}MEA-JJG4XL3\DEV3.DWH_DB;Auto Translate=False;" />
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

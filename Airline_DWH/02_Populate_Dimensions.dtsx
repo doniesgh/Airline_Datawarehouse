@@ -1,10 +1,11 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
   DTS:refId="Package"
   DTS:CreationDate="4/24/2026 3:27:03 PM"
   DTS:CreationName="Microsoft.Package"
   DTS:CreatorComputerName="MEA-JJG4XL3"
   DTS:CreatorName="AzureAD\RaedCHARRAD"
+  DTS:DelayValidation="True"
   DTS:DTSID="{43E39E9B-7F96-404E-ACAD-E6EE530351E8}"
   DTS:ExecutableType="Microsoft.Package"
   DTS:LastModifiedProductVersion="17.0.1016.0"
@@ -12,10 +13,10 @@
   DTS:ObjectName="02_Populate_Dimensions"
   DTS:PackageType="5"
   DTS:ProtectionLevel="0"
-  DTS:VersionBuild="1"
-  DTS:VersionGUID="{F1057600-F723-458A-B261-4ED062ABDC69}"
-  DTS:DelayValidation="True">
-  <DTS:Property DTS:Name="PackageFormatVersion" DTS:DataType="6">8</DTS:Property>
+  DTS:VersionBuild="26"
+  DTS:VersionGUID="{CCF0DCBE-71B2-40BC-B4B2-AA9AAABF1940}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
     <DTS:ConnectionManager
       DTS:refId="Package.ConnectionManagers[Airline_DWH]"
@@ -32,130 +33,2793 @@
   </DTS:ConnectionManagers>
   <DTS:Variables />
   <DTS:Executables>
-
-    <!-- DIM_DATE, DIM_LOYALTY_CARD, DIM_GEOGRAPHY, DIM_TRAVEL run in parallel -->
-    <!-- DIM_CUSTOMER runs after DIM_LOYALTY_CARD and DIM_GEOGRAPHY complete    -->
-
     <DTS:Executable
-      DTS:refId="Package\SQL_DIM_DATE"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{CC000002-0000-4000-8000-CC0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_DIM_CUSTOMER"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{D41EF7AA-6DBC-4043-BDEF-98A7C7B265FF}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_DIM_DATE"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_DIM_CUSTOMER"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_DATE (DateValue,Year,Quarter,QuarterLabel,MonthNumber,MonthName,DayOfWeek,DayName,IsWeekend,StartOfYear,StartOfQuarter,StartOfMonth)&#xA;SELECT DISTINCT&#xA;    s.DateValue,&#xA;    YEAR(s.DateValue),&#xA;    DATEPART(QUARTER,s.DateValue),&#xA;    CONCAT(N'Q',DATEPART(QUARTER,s.DateValue)),&#xA;    MONTH(s.DateValue),&#xA;    DATENAME(MONTH,s.DateValue),&#xA;    DATEPART(WEEKDAY,s.DateValue),&#xA;    DATENAME(WEEKDAY,s.DateValue),&#xA;    CASE WHEN DATEPART(WEEKDAY,s.DateValue) IN (1,7) THEN 1 ELSE 0 END,&#xA;    s.StartOfYear, s.StartOfQuarter, s.StartOfMonth&#xA;FROM STAGING_DB.dbo.stg_date s&#xA;WHERE s.DateValue IS NOT NULL&#xA;AND NOT EXISTS (SELECT 1 FROM dbo.DIM_DATE d WHERE d.DateValue=s.DateValue AND d.SK_Date &gt; 0);&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="Destination OLE DB"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[DIM_CUSTOMER]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">true</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[LoyaltyNumber]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="LoyaltyNumber"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[LoyaltyNumber]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[LoyaltyNumber]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Gender]"
+                      cachedDataType="wstr"
+                      cachedLength="20"
+                      cachedName="Gender"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Gender]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Gender]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Education]"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Education"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Education]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Education]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Salary]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Salary"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Salary]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Salary]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[MaritalStatus]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="MaritalStatus"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[MaritalStatus]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[MaritalStatus]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[CLV]"
+                      cachedDataType="numeric"
+                      cachedName="CLV"
+                      cachedPrecision="18"
+                      cachedScale="2"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CLV]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CLV]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[EnrollmentType]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="EnrollmentType"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentType]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentType]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[EnrollmentYear]"
+                      cachedDataType="i4"
+                      cachedName="EnrollmentYear"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentYear]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentYear]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[EnrollmentMonth]"
+                      cachedDataType="i4"
+                      cachedName="EnrollmentMonth"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentMonth]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentMonth]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[CancellationYear]"
+                      cachedDataType="i4"
+                      cachedName="CancellationYear"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CancellationYear]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CancellationYear]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[CancellationMonth]"
+                      cachedDataType="i4"
+                      cachedName="CancellationMonth"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CancellationMonth]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CancellationMonth]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[IsChurned]"
+                      cachedDataType="i4"
+                      cachedName="IsChurned"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[IsChurned]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[IsChurned]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_LoyaltyCard]"
+                      cachedDataType="i4"
+                      cachedName="SK_LoyaltyCard"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_LoyaltyCard]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SK_Geography]"
+                      cachedDataType="i4"
+                      cachedName="SK_Geography"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[EnrollmentDate]"
+                      cachedDataType="dbDate"
+                      cachedName="EnrollmentDate"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentDate]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentDate]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SCD_StartDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="SCD_StartDate"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SCD_StartDate]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_StartDate]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SCD_EndDate]"
+                      cachedDataType="i4"
+                      cachedName="SCD_EndDate"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SCD_EndDate]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_EndDate]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[SCD_IsCurrent]"
+                      cachedDataType="i4"
+                      cachedName="SCD_IsCurrent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SCD_IsCurrent]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_IsCurrent]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Customer]"
+                      dataType="i4"
+                      name="SK_Customer" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[LoyaltyNumber]"
+                      dataType="wstr"
+                      length="50"
+                      name="LoyaltyNumber" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Gender]"
+                      dataType="wstr"
+                      length="20"
+                      name="Gender" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Education]"
+                      dataType="wstr"
+                      length="100"
+                      name="Education" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Salary]"
+                      dataType="wstr"
+                      length="50"
+                      name="Salary" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[MaritalStatus]"
+                      dataType="wstr"
+                      length="50"
+                      name="MaritalStatus" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CLV]"
+                      dataType="numeric"
+                      name="CLV"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentType]"
+                      dataType="wstr"
+                      length="50"
+                      name="EnrollmentType" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentYear]"
+                      dataType="i4"
+                      name="EnrollmentYear" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentMonth]"
+                      dataType="i4"
+                      name="EnrollmentMonth" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CancellationYear]"
+                      dataType="i4"
+                      name="CancellationYear" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[CancellationMonth]"
+                      dataType="i4"
+                      name="CancellationMonth" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[IsChurned]"
+                      dataType="bool"
+                      name="IsChurned" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[EnrollmentDate]"
+                      dataType="dbDate"
+                      name="EnrollmentDate" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SCD_StartDate]"
+                      dataType="dbDate"
+                      name="SCD_StartDate" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SCD_EndDate]"
+                      dataType="dbDate"
+                      name="SCD_EndDate" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SCD_IsCurrent]"
+                      dataType="bool"
+                      name="SCD_IsCurrent" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_DIM_CUSTOMER\Source OLE DB"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="Source OLE DB"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[stg_customer_loyalty]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT
+    s.LoyaltyNumber,
+    ISNULL(s.Gender, N'Unknown') AS Gender,
+    ISNULL(s.Education, N'Unknown') AS Education,
+    ISNULL(s.Salary, N'Unknown') AS Salary,
+    ISNULL(s.MaritalStatus, N'Unknown') AS MaritalStatus,
+    s.CLV,
+    ISNULL(s.EnrollmentType, N'Unknown') AS EnrollmentType,
+    s.EnrollmentYear,
+    s.EnrollmentMonth,
+    s.CancellationYear,
+    s.CancellationMonth,
+    CASE
+        WHEN s.CancellationYear IS NOT NULL THEN 1
+        ELSE 0
+    END AS IsChurned,
+
+    ISNULL(
+        (
+            SELECT TOP 1 lc.SK_LoyaltyCard
+            FROM DWH_DB.dbo.DIM_LOYALTY_CARD lc
+            WHERE lc.LoyaltyCard = ISNULL(s.LoyaltyCard, N'Unknown')
+              AND lc.SK_LoyaltyCard &gt; 0
+        ),
+        -1
+    ) AS SK_LoyaltyCard,
+
+    ISNULL(
+        (
+            SELECT TOP 1 g.SK_Geography
+            FROM DWH_DB.dbo.DIM_GEOGRAPHY g
+            WHERE g.Country     = ISNULL(s.Country, N'Unknown')
+              AND g.Province    = ISNULL(s.Province, N'Unknown')
+              AND g.City        = ISNULL(s.City, N'Unknown')
+              AND g.PostalCode  = ISNULL(s.PostalCode, N'Unknown')
+              AND g.SK_Geography &gt; 0
+        ),
+        -1
+    ) AS SK_Geography,
+
+    DATEFROMPARTS(s.EnrollmentYear, s.EnrollmentMonth, 1) AS EnrollmentDate,
+    GETDATE() AS SCD_StartDate,
+    NULL AS SCD_EndDate,
+    1 AS SCD_IsCurrent
+
+FROM STAGING_DB.dbo.stg_customer_loyalty s
+
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM DWH_DB.dbo.DIM_CUSTOMER d
+    WHERE d.LoyaltyNumber = s.LoyaltyNumber
+      AND d.SK_Customer &gt; 0
+);</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[LoyaltyNumber]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[LoyaltyNumber]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[LoyaltyNumber]"
+                      name="LoyaltyNumber"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Gender]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Gender]"
+                      length="20"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Gender]"
+                      name="Gender"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Education]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Education]"
+                      length="100"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Education]"
+                      name="Education"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Salary]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Salary]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Salary]"
+                      name="Salary"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[MaritalStatus]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[MaritalStatus]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[MaritalStatus]"
+                      name="MaritalStatus"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CLV]"
+                      dataType="numeric"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CLV]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CLV]"
+                      name="CLV"
+                      precision="18"
+                      scale="2"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentType]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentType]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentType]"
+                      name="EnrollmentType"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentYear]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentYear]"
+                      name="EnrollmentYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentMonth]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentMonth]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentMonth]"
+                      name="EnrollmentMonth"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CancellationYear]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CancellationYear]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CancellationYear]"
+                      name="CancellationYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CancellationMonth]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CancellationMonth]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[CancellationMonth]"
+                      name="CancellationMonth"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[IsChurned]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[IsChurned]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[IsChurned]"
+                      name="IsChurned"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_LoyaltyCard]"
+                      name="SK_LoyaltyCard"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Geography]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SK_Geography]"
+                      name="SK_Geography"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentDate]"
+                      dataType="dbDate"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentDate]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[EnrollmentDate]"
+                      name="EnrollmentDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_StartDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SCD_StartDate]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_StartDate]"
+                      name="SCD_StartDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_EndDate]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SCD_EndDate]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_EndDate]"
+                      name="SCD_EndDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_IsCurrent]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SCD_IsCurrent]"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[SCD_IsCurrent]"
+                      name="SCD_IsCurrent"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[LoyaltyNumber]"
+                      dataType="wstr"
+                      length="50"
+                      name="LoyaltyNumber" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Gender]"
+                      dataType="wstr"
+                      length="20"
+                      name="Gender" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Education]"
+                      dataType="wstr"
+                      length="100"
+                      name="Education" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Salary]"
+                      dataType="wstr"
+                      length="50"
+                      name="Salary" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[MaritalStatus]"
+                      dataType="wstr"
+                      length="50"
+                      name="MaritalStatus" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CLV]"
+                      dataType="numeric"
+                      name="CLV"
+                      precision="18"
+                      scale="2" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentType]"
+                      dataType="wstr"
+                      length="50"
+                      name="EnrollmentType" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentYear]"
+                      dataType="i4"
+                      name="EnrollmentYear" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentMonth]"
+                      dataType="i4"
+                      name="EnrollmentMonth" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CancellationYear]"
+                      dataType="i4"
+                      name="CancellationYear" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[CancellationMonth]"
+                      dataType="i4"
+                      name="CancellationMonth" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[IsChurned]"
+                      dataType="i4"
+                      name="IsChurned" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[EnrollmentDate]"
+                      dataType="dbDate"
+                      name="EnrollmentDate" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SCD_StartDate]"
+                      dataType="dbTimeStamp"
+                      name="SCD_StartDate" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SCD_EndDate]"
+                      dataType="i4"
+                      name="SCD_EndDate" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[SCD_IsCurrent]"
+                      dataType="i4"
+                      name="SCD_IsCurrent" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[LoyaltyNumber]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[LoyaltyNumber]"
+                      name="LoyaltyNumber" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Gender]"
+                      dataType="wstr"
+                      length="20"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Gender]"
+                      name="Gender" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Education]"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Education]"
+                      name="Education" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Salary]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Salary]"
+                      name="Salary" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[MaritalStatus]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[MaritalStatus]"
+                      name="MaritalStatus" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CLV]"
+                      dataType="numeric"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CLV]"
+                      name="CLV"
+                      precision="18"
+                      scale="2" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentType]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentType]"
+                      name="EnrollmentType" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentYear]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentYear]"
+                      name="EnrollmentYear" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentMonth]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentMonth]"
+                      name="EnrollmentMonth" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CancellationYear]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CancellationYear]"
+                      name="CancellationYear" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CancellationMonth]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[CancellationMonth]"
+                      name="CancellationMonth" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[IsChurned]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[IsChurned]"
+                      name="IsChurned" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_LoyaltyCard]"
+                      name="SK_LoyaltyCard" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Geography]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SK_Geography]"
+                      name="SK_Geography" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentDate]"
+                      dataType="dbDate"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[EnrollmentDate]"
+                      name="EnrollmentDate" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SCD_StartDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SCD_StartDate]"
+                      name="SCD_StartDate" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SCD_EndDate]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SCD_EndDate]"
+                      name="SCD_EndDate" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SCD_IsCurrent]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[SCD_IsCurrent]"
+                      name="SCD_IsCurrent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_DIM_CUSTOMER.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_DIM_CUSTOMER\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_DIM_CUSTOMER\Source OLE DB.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
     <DTS:Executable
-      DTS:refId="Package\SQL_DIM_LOYALTY_CARD"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{CC000003-0000-4000-8000-CC0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_DIM_DATE"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{DC352551-60EB-41FF-86E9-C49EA417F1FD}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_DIM_LOYALTY_CARD"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_DIM_DATE"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_LOYALTY_CARD (LoyaltyCard)&#xA;SELECT DISTINCT ISNULL(s.LoyaltyCard,N'Unknown')&#xA;FROM STAGING_DB.dbo.stg_customer_loyalty s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_LOYALTY_CARD d&#xA;    WHERE d.LoyaltyCard=ISNULL(s.LoyaltyCard,N'Unknown') AND d.SK_LoyaltyCard &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_DIM_DATE\DST_DIM_DATE"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="DST_DIM_DATE"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[DIM_DATE]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[DateValue]"
+                      cachedDataType="dbDate"
+                      cachedName="DateValue"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[DateValue]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DateValue]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[StartOfYear]"
+                      cachedDataType="dbDate"
+                      cachedName="StartOfYear"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[StartOfYear]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfYear]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[StartOfQuarter]"
+                      cachedDataType="dbDate"
+                      cachedName="StartOfQuarter"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[StartOfQuarter]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfQuarter]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[StartOfMonth]"
+                      cachedDataType="dbDate"
+                      cachedName="StartOfMonth"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[StartOfMonth]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfMonth]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[Year]"
+                      cachedDataType="i4"
+                      cachedName="Year"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[Year]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[Year]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[Quarter]"
+                      cachedDataType="i4"
+                      cachedName="Quarter"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[Quarter]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[Quarter]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[QuarterLabel]"
+                      cachedDataType="wstr"
+                      cachedLength="13"
+                      cachedName="QuarterLabel"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[QuarterLabel]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[QuarterLabel]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[MonthNumber]"
+                      cachedDataType="i4"
+                      cachedName="MonthNumber"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[MonthNumber]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[MonthNumber]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[MonthName]"
+                      cachedDataType="wstr"
+                      cachedLength="30"
+                      cachedName="MonthName"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[MonthName]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[MonthName]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[DayOfWeek]"
+                      cachedDataType="i4"
+                      cachedName="DayOfWeek"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[DayOfWeek]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DayOfWeek]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[DayName]"
+                      cachedDataType="wstr"
+                      cachedLength="30"
+                      cachedName="DayName"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[DayName]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DayName]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].Columns[IsWeekend]"
+                      cachedDataType="i4"
+                      cachedName="IsWeekend"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[IsWeekend]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[IsWeekend]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Date]"
+                      dataType="i4"
+                      name="SK_Date" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[DateValue]"
+                      dataType="dbDate"
+                      name="DateValue" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[Year]"
+                      dataType="i4"
+                      name="Year" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[Quarter]"
+                      dataType="i4"
+                      name="Quarter" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[QuarterLabel]"
+                      dataType="wstr"
+                      length="20"
+                      name="QuarterLabel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[MonthNumber]"
+                      dataType="i4"
+                      name="MonthNumber" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[MonthName]"
+                      dataType="wstr"
+                      length="20"
+                      name="MonthName" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[DayOfWeek]"
+                      dataType="i4"
+                      name="DayOfWeek" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[DayName]"
+                      dataType="wstr"
+                      length="20"
+                      name="DayName" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[IsWeekend]"
+                      dataType="bool"
+                      name="IsWeekend" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[StartOfYear]"
+                      dataType="dbDate"
+                      name="StartOfYear" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[StartOfQuarter]"
+                      dataType="dbDate"
+                      name="StartOfQuarter" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB].ExternalColumns[StartOfMonth]"
+                      dataType="dbDate"
+                      name="StartOfMonth" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\DST_DIM_DATE.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\DST_DIM_DATE.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\DST_DIM_DATE.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_DIM_DATE\SRC_stg_date"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="SRC_stg_date"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[stg_date]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT DISTINCT
+    s.DateValue,
+    YEAR(s.DateValue)                                                      AS Year,
+    DATEPART(QUARTER, s.DateValue)                                         AS Quarter,
+    CONCAT(N'Q', DATEPART(QUARTER, s.DateValue))                          AS QuarterLabel,
+    MONTH(s.DateValue)                                                     AS MonthNumber,
+    DATENAME(MONTH,   s.DateValue)                                         AS MonthName,
+    DATEPART(WEEKDAY, s.DateValue)                                         AS DayOfWeek,
+    DATENAME(WEEKDAY, s.DateValue)                                         AS DayName,
+    CASE WHEN DATEPART(WEEKDAY, s.DateValue) IN (1,7) THEN 1 ELSE 0 END  AS IsWeekend,
+    s.StartOfYear,
+    s.StartOfQuarter,
+    s.StartOfMonth
+FROM STAGING_DB.dbo.stg_date s
+WHERE s.DateValue IS NOT NULL</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_DATE\SRC_stg_date.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DateValue]"
+                      dataType="dbDate"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[DateValue]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DateValue]"
+                      name="DateValue"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfYear]"
+                      dataType="dbDate"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[StartOfYear]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfYear]"
+                      name="StartOfYear"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfQuarter]"
+                      dataType="dbDate"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[StartOfQuarter]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfQuarter]"
+                      name="StartOfQuarter"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfMonth]"
+                      dataType="dbDate"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[StartOfMonth]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[StartOfMonth]"
+                      name="StartOfMonth"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[Year]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[Year]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[Year]"
+                      name="Year"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[Quarter]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[Quarter]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[Quarter]"
+                      name="Quarter"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[QuarterLabel]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[QuarterLabel]"
+                      length="13"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[QuarterLabel]"
+                      name="QuarterLabel"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[MonthNumber]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[MonthNumber]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[MonthNumber]"
+                      name="MonthNumber"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[MonthName]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[MonthName]"
+                      length="30"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[MonthName]"
+                      name="MonthName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DayOfWeek]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[DayOfWeek]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DayOfWeek]"
+                      name="DayOfWeek"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DayName]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[DayName]"
+                      length="30"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[DayName]"
+                      name="DayName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[IsWeekend]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[IsWeekend]"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].Columns[IsWeekend]"
+                      name="IsWeekend"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[DateValue]"
+                      dataType="dbDate"
+                      name="DateValue" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[StartOfYear]"
+                      dataType="dbDate"
+                      name="StartOfYear" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[StartOfQuarter]"
+                      dataType="dbDate"
+                      name="StartOfQuarter" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[StartOfMonth]"
+                      dataType="dbDate"
+                      name="StartOfMonth" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[Year]"
+                      dataType="i4"
+                      name="Year" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[Quarter]"
+                      dataType="i4"
+                      name="Quarter" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[QuarterLabel]"
+                      dataType="wstr"
+                      length="13"
+                      name="QuarterLabel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[MonthNumber]"
+                      dataType="i4"
+                      name="MonthNumber" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[MonthName]"
+                      dataType="wstr"
+                      length="30"
+                      name="MonthName" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[DayOfWeek]"
+                      dataType="i4"
+                      name="DayOfWeek" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[DayName]"
+                      dataType="wstr"
+                      length="30"
+                      name="DayName" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB].ExternalColumns[IsWeekend]"
+                      dataType="i4"
+                      name="IsWeekend" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[DateValue]"
+                      dataType="dbDate"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[DateValue]"
+                      name="DateValue" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[Year]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[Year]"
+                      name="Year" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[Quarter]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[Quarter]"
+                      name="Quarter" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[QuarterLabel]"
+                      dataType="wstr"
+                      length="13"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[QuarterLabel]"
+                      name="QuarterLabel" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[MonthNumber]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[MonthNumber]"
+                      name="MonthNumber" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[MonthName]"
+                      dataType="wstr"
+                      length="30"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[MonthName]"
+                      name="MonthName" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[DayOfWeek]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[DayOfWeek]"
+                      name="DayOfWeek" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[DayName]"
+                      dataType="wstr"
+                      length="30"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[DayName]"
+                      name="DayName" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[IsWeekend]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[IsWeekend]"
+                      name="IsWeekend" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[StartOfYear]"
+                      dataType="dbDate"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[StartOfYear]"
+                      name="StartOfYear" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[StartOfQuarter]"
+                      dataType="dbDate"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[StartOfQuarter]"
+                      name="StartOfQuarter" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[StartOfMonth]"
+                      dataType="dbDate"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[StartOfMonth]"
+                      name="StartOfMonth" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_DIM_DATE.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_DIM_DATE\DST_DIM_DATE.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_DIM_DATE\SRC_stg_date.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
     <DTS:Executable
-      DTS:refId="Package\SQL_DIM_GEOGRAPHY"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{CC000004-0000-4000-8000-CC0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_DIM_GEOGRAPHY"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{0FEED872-6151-4517-9ABD-196673820C84}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_DIM_GEOGRAPHY"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_DIM_GEOGRAPHY"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_GEOGRAPHY (Country,Province,City,PostalCode)&#xA;SELECT DISTINCT&#xA;    ISNULL(s.Country,N'Unknown'),&#xA;    ISNULL(s.Province,N'Unknown'),&#xA;    ISNULL(s.City,N'Unknown'),&#xA;    ISNULL(s.PostalCode,N'Unknown')&#xA;FROM STAGING_DB.dbo.stg_customer_loyalty s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_GEOGRAPHY d&#xA;    WHERE d.Country=ISNULL(s.Country,N'Unknown')&#xA;    AND d.Province=ISNULL(s.Province,N'Unknown')&#xA;    AND d.City=ISNULL(s.City,N'Unknown')&#xA;    AND d.PostalCode=ISNULL(s.PostalCode,N'Unknown')&#xA;    AND d.SK_Geography &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="DST_DIM_GEOGRAPHY"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[DIM_GEOGRAPHY]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">0</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].Columns[Country]"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Country"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[Country]"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[Country]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].Columns[Province]"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Province"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[Province]"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[Province]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].Columns[City]"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="City"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[City]"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[City]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].Columns[PostalCode]"
+                      cachedDataType="wstr"
+                      cachedLength="20"
+                      cachedName="PostalCode"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[PostalCode]"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[PostalCode]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Geography]"
+                      dataType="i4"
+                      name="SK_Geography" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[Country]"
+                      dataType="wstr"
+                      length="100"
+                      name="Country" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[Province]"
+                      dataType="wstr"
+                      length="100"
+                      name="Province" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[City]"
+                      dataType="wstr"
+                      length="100"
+                      name="City" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB].ExternalColumns[PostalCode]"
+                      dataType="wstr"
+                      length="20"
+                      name="PostalCode" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="SRC_Geography"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT DISTINCT
+    ISNULL(s.Country,    N'Unknown') AS Country,
+    ISNULL(s.Province,   N'Unknown') AS Province,
+    ISNULL(s.City,       N'Unknown') AS City,
+    ISNULL(s.PostalCode, N'Unknown') AS PostalCode
+FROM STAGING_DB.dbo.stg_customer_loyalty s
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM DWH_DB.dbo.DIM_GEOGRAPHY d
+    WHERE d.Country     = ISNULL(s.Country,    N'Unknown')
+      AND d.Province    = ISNULL(s.Province,   N'Unknown')
+      AND d.City        = ISNULL(s.City,       N'Unknown')
+      AND d.PostalCode  = ISNULL(s.PostalCode, N'Unknown')
+      AND d.SK_Geography &gt; 0
+);</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[Country]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[Country]"
+                      length="100"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[Country]"
+                      name="Country"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[Province]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[Province]"
+                      length="100"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[Province]"
+                      name="Province"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[City]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[City]"
+                      length="100"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[City]"
+                      name="City"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[PostalCode]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[PostalCode]"
+                      length="20"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].Columns[PostalCode]"
+                      name="PostalCode"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[Country]"
+                      dataType="wstr"
+                      length="100"
+                      name="Country" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[Province]"
+                      dataType="wstr"
+                      length="100"
+                      name="Province" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[City]"
+                      dataType="wstr"
+                      length="100"
+                      name="City" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB].ExternalColumns[PostalCode]"
+                      dataType="wstr"
+                      length="20"
+                      name="PostalCode" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[Country]"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[Country]"
+                      name="Country" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[Province]"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[Province]"
+                      name="Province" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[City]"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[City]"
+                      name="City" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[PostalCode]"
+                      dataType="wstr"
+                      length="20"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[PostalCode]"
+                      name="PostalCode" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_DIM_GEOGRAPHY.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_DIM_GEOGRAPHY\SRC_Geography.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
     <DTS:Executable
-      DTS:refId="Package\SQL_DIM_TRAVEL"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{CC000005-0000-4000-8000-CC0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_DIM_LOYALTY_CARD"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{CBECF76A-3220-496F-97FC-26ECD33C5116}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_DIM_TRAVEL"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_DIM_LOYALTY_CARD"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_TRAVEL (TypeOfTravel,Class,TravelProfile)&#xA;SELECT DISTINCT&#xA;    ISNULL(s.TypeOfTravel,N'Unknown'),&#xA;    ISNULL(s.Class,N'Unknown'),&#xA;    CONCAT(ISNULL(s.TypeOfTravel,N'Unknown'),N' - ',ISNULL(s.Class,N'Unknown'))&#xA;FROM STAGING_DB.dbo.stg_airline_satisfaction s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_TRAVEL d&#xA;    WHERE d.TypeOfTravel=ISNULL(s.TypeOfTravel,N'Unknown')&#xA;    AND d.Class=ISNULL(s.Class,N'Unknown')&#xA;    AND d.SK_Travel &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="DST_DIM_LOYALTY_CARD"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[DIM_LOYALTY_CARD]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB].Columns[LoyaltyCard]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="LoyaltyCard"
+                      externalMetadataColumnId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB].ExternalColumns[LoyaltyCard]"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB].Columns[LoyaltyCard]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_LoyaltyCard]"
+                      dataType="i4"
+                      name="SK_LoyaltyCard" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB].ExternalColumns[LoyaltyCard]"
+                      dataType="wstr"
+                      length="50"
+                      name="LoyaltyCard" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="SRC_LoyaltyCard"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[stg_customer_loyalty]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT DISTINCT 
+    ISNULL(s.LoyaltyCard, N'Unknown') AS LoyaltyCard
+FROM STAGING_DB.dbo.stg_customer_loyalty s
+WHERE NOT EXISTS (
+    SELECT 1 
+    FROM DWH_DB.dbo.DIM_LOYALTY_CARD d 
+    WHERE d.LoyaltyCard = ISNULL(s.LoyaltyCard, N'Unknown')
+      AND d.SK_LoyaltyCard &gt; 0
+);</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB].Columns[LoyaltyCard]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB].ExternalColumns[LoyaltyCard]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB].Columns[LoyaltyCard]"
+                      name="LoyaltyCard"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB].ExternalColumns[LoyaltyCard]"
+                      dataType="wstr"
+                      length="50"
+                      name="LoyaltyCard" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB].Columns[LoyaltyCard]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB].Columns[LoyaltyCard]"
+                      name="LoyaltyCard" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_DIM_LOYALTY_CARD.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
     <DTS:Executable
-      DTS:refId="Package\SQL_DIM_CUSTOMER"
-      DTS:CreationName="Microsoft.ExecuteSQLTask"
-      DTS:DTSID="{CC000006-0000-4000-8000-CC0000000001}"
-      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:refId="Package\DFT_DIM_TRAVEL"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Tâche de flux de données"
+      DTS:DTSID="{80CAB1CA-55A0-4066-9B77-09632B744043}"
+      DTS:ExecutableType="Microsoft.Pipeline"
       DTS:LocaleID="-1"
-      DTS:ObjectName="SQL_DIM_CUSTOMER"
-      DTS:TaskContact="Execute SQL Task">
+      DTS:ObjectName="DFT_DIM_TRAVEL"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
       <DTS:Variables />
       <DTS:ObjectData>
-        <SQLTask:SqlTaskData
-          SQLTask:Connection="{CC000001-0000-4000-8000-CC0000000001}"
-          SQLTask:SqlStatementSource="SET NOCOUNT ON;&#xA;USE [DWH_DB];&#xA;INSERT INTO dbo.DIM_CUSTOMER (LoyaltyNumber,Gender,Education,Salary,MaritalStatus,CLV,EnrollmentType,EnrollmentYear,EnrollmentMonth,CancellationYear,CancellationMonth,IsChurned,SK_LoyaltyCard,SK_Geography,EnrollmentDate,SCD_StartDate,SCD_EndDate,SCD_IsCurrent)&#xA;SELECT&#xA;    s.LoyaltyNumber,&#xA;    ISNULL(s.Gender,N'Unknown'),&#xA;    ISNULL(s.Education,N'Unknown'),&#xA;    ISNULL(s.Salary,N'Unknown'),&#xA;    ISNULL(s.MaritalStatus,N'Unknown'),&#xA;    TRY_CAST(s.CLV AS DECIMAL(18,2)),&#xA;    ISNULL(s.EnrollmentType,N'Unknown'),&#xA;    s.EnrollmentYear,&#xA;    s.EnrollmentMonth,&#xA;    TRY_CAST(s.CancellationYear AS INT),&#xA;    TRY_CAST(s.CancellationMonth AS INT),&#xA;    CASE WHEN TRY_CAST(s.CancellationYear AS INT) IS NOT NULL THEN 1 ELSE 0 END,&#xA;    ISNULL((SELECT TOP 1 lc.SK_LoyaltyCard FROM dbo.DIM_LOYALTY_CARD lc WHERE lc.LoyaltyCard=ISNULL(s.LoyaltyCard,N'Unknown') AND lc.SK_LoyaltyCard &gt; 0),-1),&#xA;    ISNULL((SELECT TOP 1 g.SK_Geography FROM dbo.DIM_GEOGRAPHY g WHERE g.Country=ISNULL(s.Country,N'Unknown') AND g.Province=ISNULL(s.Province,N'Unknown') AND g.City=ISNULL(s.City,N'Unknown') AND g.PostalCode=ISNULL(s.PostalCode,N'Unknown') AND g.SK_Geography &gt; 0),-1),&#xA;    DATEFROMPARTS(s.EnrollmentYear,s.EnrollmentMonth,1),&#xA;    GETDATE(), NULL, 1&#xA;FROM STAGING_DB.dbo.stg_customer_loyalty s&#xA;WHERE NOT EXISTS (&#xA;    SELECT 1 FROM dbo.DIM_CUSTOMER d&#xA;    WHERE d.LoyaltyNumber=s.LoyaltyNumber AND d.SK_Customer &gt; 0&#xA;);&#xA;USE [STAGING_DB];"
-          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\DFT_DIM_TRAVEL\Destination OLE DB"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="Destination OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;4"
+              description="Destination OLE DB"
+              name="Destination OLE DB"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset">[dbo].[DIM_TRAVEL]</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les valeurs fournies pour les colonnes d'identité seront copiées à la destination. Si la valeur est définie à False, les valeurs des colonnes d'identité seront générées automatiquement à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indique si les colonnes contenant la valeur NULL auront cette valeur NULL copiée à la destination. Si la valeur est définie à False, les colonnes contenant la valeur NULL auront leurs valeurs par défaut insérées à la destination. Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie les options à utiliser avec le chargement rapide.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="{ABEC3C90-D3AE-41BD-9293-AE867C050BD9}:external"
+                  connectionManagerRefId="Project.ConnectionManagers[MEA-JJG4XL3_DEV3.DWH_DB]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+                  errorOrTruncationOperation="Insérer"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Entrée de destination OLE DB">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[TypeOfTravel]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="TypeOfTravel"
+                      externalMetadataColumnId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TypeOfTravel]"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TypeOfTravel]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[Class]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Class"
+                      externalMetadataColumnId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Class]"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Class]" />
+                    <inputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].Columns[TravelProfile]"
+                      cachedDataType="wstr"
+                      cachedLength="103"
+                      cachedName="TravelProfile"
+                      externalMetadataColumnId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TravelProfile]"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TravelProfile]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[SK_Travel]"
+                      dataType="i4"
+                      name="SK_Travel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TypeOfTravel]"
+                      dataType="wstr"
+                      length="50"
+                      name="TypeOfTravel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Class]"
+                      dataType="wstr"
+                      length="50"
+                      name="Class" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[TravelProfile]"
+                      dataType="wstr"
+                      length="100"
+                      name="TravelProfile" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de destination OLE DB"
+                  synchronousInputId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Outputs[Sortie d'erreur de destination OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\DFT_DIM_TRAVEL\Source OLE DB"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="Source OLE DB;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;7"
+              description="Source OLE DB"
+              name="Source OLE DB"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="Nombre de secondes avant l'expiration d'une commande.  Une valeur égale à 0 indique un délai d'expiration infini."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Spécifie la variable contenant le nom de l'objet de base de données utilisé pour ouvrir un ensemble de lignes."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="Commande SQL à exécuter."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor, Microsoft.DataTransformationServices.Controls, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91">SELECT DISTINCT
+    ISNULL(s.TypeOfTravel, N'Unknown') AS TypeOfTravel,
+    ISNULL(s.Class, N'Unknown') AS Class,
+    CONCAT(
+        ISNULL(s.TypeOfTravel, N'Unknown'),
+        N' - ',
+        ISNULL(s.Class, N'Unknown')
+    ) AS TravelProfile
+FROM STAGING_DB.dbo.stg_airline_satisfaction s
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM DWH_DB.dbo.DIM_TRAVEL d
+    WHERE d.TypeOfTravel = ISNULL(s.TypeOfTravel, N'Unknown')
+      AND d.Class        = ISNULL(s.Class, N'Unknown')
+      AND d.SK_Travel &gt; 0
+);</property>
+                <property
+                  dataType="System.String"
+                  description="Variable contenant la commande SQL à exécuter."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie la page de codes de la colonne à utiliser lorsque les informations de page de codes ne sont pas disponibles à partir de la source de données."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Force l'utilisation de la valeur de propriété DefaultCodePage lors de la description des données caractères."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Spécifie le mode utilisé pour accéder à la base de données."
+                  name="AccessMode"
+                  typeConverter="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="Mappages entre les paramètres de la commande SQL et les variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Airline_DWH]"
+                  connectionManagerRefId="Package.ConnectionManagers[Airline_DWH]"
+                  description="Connexion OLE DB en cours d'exécution utilisée pour accéder à la base de données."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB]"
+                  name="Sortie de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TypeOfTravel]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TypeOfTravel]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TypeOfTravel]"
+                      name="TypeOfTravel"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Class]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Class]"
+                      length="50"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[Class]"
+                      name="Class"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TravelProfile]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TravelProfile]"
+                      length="103"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].Columns[TravelProfile]"
+                      name="TravelProfile"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TypeOfTravel]"
+                      dataType="wstr"
+                      length="50"
+                      name="TypeOfTravel" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[Class]"
+                      dataType="wstr"
+                      length="50"
+                      name="Class" />
+                    <externalMetadataColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB].ExternalColumns[TravelProfile]"
+                      dataType="wstr"
+                      length="103"
+                      name="TravelProfile" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB]"
+                  isErrorOut="true"
+                  name="Sortie d'erreur de source OLE DB">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TypeOfTravel]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TypeOfTravel]"
+                      name="TypeOfTravel" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Class]"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[Class]"
+                      name="Class" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TravelProfile]"
+                      dataType="wstr"
+                      length="103"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[TravelProfile]"
+                      name="TravelProfile" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie d'erreur de source OLE DB].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\DFT_DIM_TRAVEL.Paths[Sortie de source OLE DB]"
+              endId="Package\DFT_DIM_TRAVEL\Destination OLE DB.Inputs[Entrée de destination OLE DB]"
+              name="Sortie de source OLE DB"
+              startId="Package\DFT_DIM_TRAVEL\Source OLE DB.Outputs[Sortie de source OLE DB]" />
+          </paths>
+        </pipeline>
       </DTS:ObjectData>
     </DTS:Executable>
-
   </DTS:Executables>
-
-  <!-- DIM_LOYALTY_CARD and DIM_GEOGRAPHY must complete before DIM_CUSTOMER -->
   <DTS:PrecedenceConstraints>
     <DTS:PrecedenceConstraint
-      DTS:refId="Package.PrecedenceConstraints[LCard_to_Customer]"
+      DTS:refId="Package.PrecedenceConstraints[Contrainte]"
       DTS:CreationName=""
-      DTS:DTSID="{CC000010-0000-4000-8000-CC0000000001}"
-      DTS:From="Package\SQL_DIM_LOYALTY_CARD"
+      DTS:DTSID="{CB42DF0A-160E-4386-8F37-9327B9EBD5AD}"
+      DTS:From="Package\DFT_DIM_LOYALTY_CARD"
       DTS:LogicalAnd="True"
-      DTS:ObjectName="LCard_to_Customer"
-      DTS:To="Package\SQL_DIM_CUSTOMER" />
+      DTS:ObjectName="Contrainte"
+      DTS:To="Package\DFT_DIM_CUSTOMER" />
     <DTS:PrecedenceConstraint
-      DTS:refId="Package.PrecedenceConstraints[Geo_to_Customer]"
+      DTS:refId="Package.PrecedenceConstraints[Contrainte 1]"
       DTS:CreationName=""
-      DTS:DTSID="{CC000011-0000-4000-8000-CC0000000001}"
-      DTS:From="Package\SQL_DIM_GEOGRAPHY"
+      DTS:DTSID="{D59AE1C2-3F3A-4729-8116-184606B00406}"
+      DTS:From="Package\DFT_DIM_GEOGRAPHY"
       DTS:LogicalAnd="True"
-      DTS:ObjectName="Geo_to_Customer"
-      DTS:To="Package\SQL_DIM_CUSTOMER" />
+      DTS:ObjectName="Contrainte 1"
+      DTS:To="Package\DFT_DIM_CUSTOMER" />
   </DTS:PrecedenceConstraints>
-
   <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
-<Objects Version="8">
-  <Package design-time-name="Package">
+<!--Cette section CDATA contient des informations sur la disposition du package. Elle comprend des informations telles que les coordonnées (x,y), la largeur et la hauteur.-->
+<!--Si vous modifiez manuellement cette section et commettez une erreur, vous pouvez la supprimer. -->
+<!--Le package pourra toujours se charger normalement, mais les informations de disposition précédente seront perdues et le concepteur réorganisera automatiquement les éléments sur l'aire de conception.-->
+<Objects
+  Version="8">
+  <!--Chaque nœud ci-dessous contiendra des propriétés qui n'affectent pas le comportement d'exécution.-->
+  <Package
+    design-time-name="Package">
     <LayoutInfo>
-      <GraphLayout Capacity="8" NumberOfVisibleColumns="4" NumberOfColumns="4">
-        <NodeLayout Size="220,42" Id="Package\SQL_DIM_DATE"         TopLeft="60,20" />
-        <NodeLayout Size="220,42" Id="Package\SQL_DIM_LOYALTY_CARD" TopLeft="300,20" />
-        <NodeLayout Size="220,42" Id="Package\SQL_DIM_GEOGRAPHY"    TopLeft="540,20" />
-        <NodeLayout Size="220,42" Id="Package\SQL_DIM_TRAVEL"       TopLeft="780,20" />
-        <NodeLayout Size="220,42" Id="Package\SQL_DIM_CUSTOMER"     TopLeft="400,120" />
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="162,42"
+          Id="Package\DFT_DIM_DATE"
+          TopLeft="67,355" />
+        <NodeLayout
+          Size="219,42"
+          Id="Package\DFT_DIM_LOYALTY_CARD"
+          TopLeft="271,352" />
+        <NodeLayout
+          Size="204,42"
+          Id="Package\DFT_DIM_GEOGRAPHY"
+          TopLeft="525,355" />
+        <NodeLayout
+          Size="175,42"
+          Id="Package\DFT_DIM_TRAVEL"
+          TopLeft="768,357" />
+        <NodeLayout
+          Size="196,42"
+          Id="Package\DFT_DIM_CUSTOMER"
+          TopLeft="345,474" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Contrainte]"
+          TopLeft="380.5,394">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="62.5,80"
+              Start="0,0"
+              End="62.5,72.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,36" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,36"
+                    Point2="0,40"
+                    Point3="4,40" />
+                  <mssgle:LineSegment
+                    End="58.5,40" />
+                  <mssgle:CubicBezierSegment
+                    Point1="58.5,40"
+                    Point2="62.5,40"
+                    Point3="62.5,44" />
+                  <mssgle:LineSegment
+                    End="62.5,72.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Contrainte 1]"
+          TopLeft="627,397">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-152.666666666667,77"
+              Start="0,0"
+              End="-152.666666666667,69.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,41.8259109311741" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,41.8259109311741"
+                    Point2="0,45.8259109311741"
+                    Point3="-4,45.8259109311741" />
+                  <mssgle:LineSegment
+                    End="-148.666666666667,45.8259109311741" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-148.666666666667,45.8259109311741"
+                    Point2="-152.666666666667,45.8259109311741"
+                    Point3="-152.666666666667,49.8259109311741" />
+                  <mssgle:LineSegment
+                    End="-152.666666666667,69.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
       </GraphLayout>
     </LayoutInfo>
   </Package>
+  <TaskHost
+    design-time-name="Package\DFT_DIM_DATE">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="150,42"
+          Id="Package\DFT_DIM_DATE\SRC_stg_date"
+          TopLeft="364,67" />
+        <NodeLayout
+          Size="163,42"
+          Id="Package\DFT_DIM_DATE\DST_DIM_DATE"
+          TopLeft="350,200" />
+        <EdgeLayout
+          Id="Package\DFT_DIM_DATE.Paths[Sortie de source OLE DB]"
+          TopLeft="435.25,109">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,91"
+              Start="0,0"
+              End="0,83.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,83.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_DATE\SRC_stg_date">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_DATE\DST_DIM_DATE">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\DFT_DIM_LOYALTY_CARD">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="167,42"
+          Id="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard"
+          TopLeft="270,76" />
+        <NodeLayout
+          Size="220,42"
+          Id="Package\DFT_DIM_LOYALTY_CARD\DST_DIM_LOYALTY_CARD"
+          TopLeft="239,193.5" />
+        <EdgeLayout
+          Id="Package\DFT_DIM_LOYALTY_CARD.Paths[Sortie de source OLE DB]"
+          TopLeft="351.25,118">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,75.5"
+              Start="0,0"
+              End="0,68">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,68" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_LOYALTY_CARD\SRC_LoyaltyCard">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\DFT_DIM_GEOGRAPHY">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="163,42"
+          Id="Package\DFT_DIM_GEOGRAPHY\SRC_Geography"
+          TopLeft="355,75" />
+        <NodeLayout
+          Size="204,42"
+          Id="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY"
+          TopLeft="334,219" />
+        <EdgeLayout
+          Id="Package\DFT_DIM_GEOGRAPHY.Paths[Sortie de source OLE DB]"
+          TopLeft="436.25,117">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,102"
+              Start="0,0"
+              End="0,94.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,94.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_GEOGRAPHY\SRC_Geography">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_GEOGRAPHY\DST_DIM_GEOGRAPHY">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\DFT_DIM_TRAVEL">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="157,42"
+          Id="Package\DFT_DIM_TRAVEL\Source OLE DB"
+          TopLeft="443,118" />
+        <NodeLayout
+          Size="177,42"
+          Id="Package\DFT_DIM_TRAVEL\Destination OLE DB"
+          TopLeft="428,248" />
+        <EdgeLayout
+          Id="Package\DFT_DIM_TRAVEL.Paths[Sortie de source OLE DB]"
+          TopLeft="519,160">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,88"
+              Start="0,0"
+              End="0,80.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,80.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_TRAVEL\Source OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_TRAVEL\Destination OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <TaskHost
+    design-time-name="Package\DFT_DIM_CUSTOMER">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="157,42"
+          Id="Package\DFT_DIM_CUSTOMER\Source OLE DB"
+          TopLeft="350,17" />
+        <NodeLayout
+          Size="177,42"
+          Id="Package\DFT_DIM_CUSTOMER\Destination OLE DB"
+          TopLeft="320,181" />
+        <EdgeLayout
+          Id="Package\DFT_DIM_CUSTOMER.Paths[Sortie de source OLE DB]"
+          TopLeft="428.5,59">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-20,122"
+              Start="0,0"
+              End="-20,114.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,57" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,57"
+                    Point2="0,61"
+                    Point3="-4,61" />
+                  <mssgle:LineSegment
+                    End="-16,61" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-16,61"
+                    Point2="-20,61"
+                    Point3="-20,65" />
+                  <mssgle:LineSegment
+                    End="-20,114.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_CUSTOMER\Source OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\DFT_DIM_CUSTOMER\Destination OLE DB">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
 </Objects>]]></DTS:DesignTimeProperties>
-
 </DTS:Executable>
