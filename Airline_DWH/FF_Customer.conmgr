@@ -7,7 +7,7 @@
   <DTS:ObjectData>
     <DTS:ConnectionManager
       DTS:Format="Delimited"
-      DTS:LocaleID="1036"
+      DTS:LocaleID="1033"
       DTS:HeaderRowDelimiter="_x000D__x000A_"
       DTS:ColumnNamesInFirstDataRow="True"
       DTS:RowDelimiter=""
@@ -22,7 +22,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Loyalty Number"
-          DTS:DTSID="{88F5E8BD-6386-4BC3-AF56-B16D333EBD6A}"
+          DTS:DTSID="{B19E5953-0618-4BF3-B34E-8EC0BB1664C7}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -31,7 +31,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Country"
-          DTS:DTSID="{9FBE7671-1670-4D2C-838B-A0903B1D3BBF}"
+          DTS:DTSID="{9A6565DC-14E1-4404-A69A-326E1688F3B3}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -40,7 +40,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Province"
-          DTS:DTSID="{4C2C4FC8-DE60-4C6B-9E0F-D6680BCA3ABA}"
+          DTS:DTSID="{6BC5217B-4F98-4E7E-907B-26092CBFDA1D}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -49,7 +49,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="City"
-          DTS:DTSID="{8524BFE9-9CF3-44B0-A4BC-33B27AD29F6C}"
+          DTS:DTSID="{8EEC1A47-3962-47DD-89DF-D668D5BE3347}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -58,7 +58,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Postal Code"
-          DTS:DTSID="{17729C79-53E3-4EAE-8630-3239DBF53E18}"
+          DTS:DTSID="{28AD3A9F-B5C4-469B-AE91-31AD498C6978}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -67,7 +67,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Gender"
-          DTS:DTSID="{E727A3ED-C10B-4F4D-8D83-5BC278814BB4}"
+          DTS:DTSID="{D970F761-95E2-4830-8055-E2E77401613E}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -76,7 +76,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Education"
-          DTS:DTSID="{1DD3BD56-695F-400B-8E58-4805E505AF63}"
+          DTS:DTSID="{66F700BC-0CE9-4275-8EA0-1571489682DF}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -85,7 +85,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Salary"
-          DTS:DTSID="{8B2E0747-AFD8-420B-9BF9-E2BC2B36CD9C}"
+          DTS:DTSID="{52A62CBC-ED83-45C4-8922-CF5EC986DC48}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -94,7 +94,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Marital Status"
-          DTS:DTSID="{EF34564E-7D92-4AE2-B6A2-30F26977603F}"
+          DTS:DTSID="{0F2FF66B-0048-42E5-B8E9-EE2E839F3DFB}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -103,7 +103,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Loyalty Card"
-          DTS:DTSID="{5D6BF104-0789-484D-B988-E5F07F9B21DB}"
+          DTS:DTSID="{7F02B81C-E886-4341-8506-0CCF6CB015E7}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -112,7 +112,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="CLV"
-          DTS:DTSID="{53449B58-21A5-42FA-AD4A-FE5CF9CD8E55}"
+          DTS:DTSID="{6F48782B-695F-4EAB-BD58-EC5B6CF01845}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -121,7 +121,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Enrollment Type"
-          DTS:DTSID="{7FB7ED29-406A-467D-A44A-C47A1890FDA9}"
+          DTS:DTSID="{0D76F51C-1CE0-44A1-928A-B5D134B74EED}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -130,7 +130,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Enrollment Year"
-          DTS:DTSID="{B1E45D42-7C20-45F8-9290-6A4DFB8625C9}"
+          DTS:DTSID="{2650AF06-30C1-4577-A53F-E0EF543D781F}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -139,7 +139,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Enrollment Month"
-          DTS:DTSID="{A43DD6C6-951A-4959-854C-440C2A91E2D6}"
+          DTS:DTSID="{0F014B80-0201-40AE-B9E2-07D94799D986}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -148,7 +148,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Cancellation Year"
-          DTS:DTSID="{DA2E91E4-24D4-4F69-AF54-7E7F1D864750}"
+          DTS:DTSID="{7A7160A6-B268-403B-ADE0-59CA6AE93811}"
           DTS:CreationName="" />
         <DTS:FlatFileColumn
           DTS:ColumnType="Delimited"
@@ -157,7 +157,7 @@
           DTS:DataType="130"
           DTS:TextQualified="True"
           DTS:ObjectName="Cancellation Month"
-          DTS:DTSID="{E7FE63A9-18F4-40D0-BBCE-CAA3812A053F}"
+          DTS:DTSID="{14FCB102-3355-4FDC-9CAF-7515F372FC6D}"
           DTS:CreationName="" />
       </DTS:FlatFileColumns>
     </DTS:ConnectionManager>

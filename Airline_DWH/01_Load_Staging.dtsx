@@ -9,12 +9,12 @@
   DTS:DTSID="{B9CA8127-7A79-4CCB-8E60-4247F6BB7924}"
   DTS:ExecutableType="Microsoft.Package"
   DTS:LastModifiedProductVersion="17.0.1016.0"
-  DTS:LocaleID="1036"
+  DTS:LocaleID="1033"
   DTS:ObjectName="01_Load_Staging"
   DTS:PackageType="5"
   DTS:ProtectionLevel="0"
-  DTS:VersionBuild="29"
-  DTS:VersionGUID="{652FBE10-D020-4DB8-953A-4D68273ED87F}">
+  DTS:VersionBuild="32"
+  DTS:VersionGUID="{8198F934-A90D-4149-9AB0-8ED2AB5C35A8}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -655,7 +655,7 @@
                 <property
                   dataType="System.Int32"
                   description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
-                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  name="FastLoadMaxInsertCommitSize">50000</property>
               </properties>
               <connections>
                 <connection
@@ -899,7 +899,7 @@
               componentClassID="Microsoft.FlatFileSource"
               contactInfo="Source du fichier plat;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;1"
               description="Source du fichier plat"
-              localeId="1036"
+              localeId="1033"
               name="SRC_customer"
               usesDispositions="true"
               version="1">
@@ -1618,7 +1618,7 @@
                 <property
                   dataType="System.Int32"
                   description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
-                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  name="FastLoadMaxInsertCommitSize">50000</property>
               </properties>
               <connections>
                 <connection
@@ -1716,7 +1716,7 @@
               componentClassID="Microsoft.FlatFileSource"
               contactInfo="Source du fichier plat;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;1"
               description="Source du fichier plat"
-              localeId="1036"
+              localeId="1033"
               name="SRC_date"
               usesDispositions="true"
               version="1">
@@ -2334,7 +2334,7 @@
                 <property
                   dataType="System.Int32"
                   description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
-                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  name="FastLoadMaxInsertCommitSize">50000</property>
               </properties>
               <connections>
                 <connection
@@ -2490,7 +2490,7 @@
               componentClassID="Microsoft.FlatFileSource"
               contactInfo="Source du fichier plat;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;1"
               description="Source du fichier plat"
-              localeId="1036"
+              localeId="1033"
               name="SRC_activity"
               usesDispositions="true"
               version="1">
@@ -3516,17 +3516,17 @@
                       cachedName="TypeOfTravel"
                       lineageId="Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[TypeOfTravel]" />
                     <inputColumn
-                      refId="Package\SRC_satisfaction\DC_CleanStrings.Inputs[Entrée de colonne dérivée].Columns[Class]"
-                      cachedDataType="wstr"
-                      cachedLength="500"
-                      cachedName="Class"
-                      lineageId="Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Class]" />
-                    <inputColumn
                       refId="Package\SRC_satisfaction\DC_CleanStrings.Inputs[Entrée de colonne dérivée].Columns[Satisfaction]"
                       cachedDataType="wstr"
                       cachedLength="500"
                       cachedName="Satisfaction"
                       lineageId="Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Satisfaction]" />
+                    <inputColumn
+                      refId="Package\SRC_satisfaction\DC_CleanStrings.Inputs[Entrée de colonne dérivée].Columns[Class]"
+                      cachedDataType="wstr"
+                      cachedLength="500"
+                      cachedName="Class"
+                      lineageId="Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Class]" />
                   </inputColumns>
                   <externalMetadataColumns />
                 </input>
@@ -3599,13 +3599,13 @@
                           containsID="true"
                           dataType="System.String"
                           description="Expression de colonne dérivée"
-                          name="Expression">(DT_WSTR,50)([LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[CustomerType]})) == "" ? "Unknown" : [LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[CustomerType]})))</property>
+                          name="Expression">(DT_WSTR,50)([LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[TypeOfTravel]})) == "" ? "Unknown" : [LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[TypeOfTravel]})))</property>
                         <property
                           containsID="true"
                           dataType="System.String"
                           description="Expression claire de colonne dérivée"
                           expressionType="Notify"
-                          name="FriendlyExpression">(DT_WSTR,50)(LTRIM(RTRIM(CustomerType)) == "" ? "Unknown" : LTRIM(RTRIM(CustomerType)))</property>
+                          name="FriendlyExpression">(DT_WSTR,50)(LTRIM(RTRIM(TypeOfTravel)) == "" ? "Unknown" : LTRIM(RTRIM(TypeOfTravel)))</property>
                       </properties>
                     </outputColumn>
                     <outputColumn
@@ -3622,13 +3622,13 @@
                           containsID="true"
                           dataType="System.String"
                           description="Expression de colonne dérivée"
-                          name="Expression">(DT_WSTR,50)([LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[TypeOfTravel]})) == "" ? "Unknown" : [LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[TypeOfTravel]})))</property>
+                          name="Expression">(DT_WSTR,50)([LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Class]})) == "" ? "Unknown" : [LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Class]})))</property>
                         <property
                           containsID="true"
                           dataType="System.String"
                           description="Expression claire de colonne dérivée"
                           expressionType="Notify"
-                          name="FriendlyExpression">(DT_WSTR,50)(LTRIM(RTRIM(TypeOfTravel)) == "" ? "Unknown" : LTRIM(RTRIM(TypeOfTravel)))</property>
+                          name="FriendlyExpression">(DT_WSTR,50)(LTRIM(RTRIM(Class)) == "" ? "Unknown" : LTRIM(RTRIM(Class)))</property>
                       </properties>
                     </outputColumn>
                     <outputColumn
@@ -3645,13 +3645,13 @@
                           containsID="true"
                           dataType="System.String"
                           description="Expression de colonne dérivée"
-                          name="Expression">(DT_WSTR,50)([LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Class]})) == "" ? "Unknown" : [LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Class]})))</property>
+                          name="Expression">(DT_WSTR,50)([LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Satisfaction]})) == "" ? "Unknown" : [LTRIM]([RTRIM](#{Package\SRC_satisfaction\SRC_satisfaction.Outputs[Sortie de source de fichier plat].Columns[Satisfaction]})))</property>
                         <property
                           containsID="true"
                           dataType="System.String"
                           description="Expression claire de colonne dérivée"
                           expressionType="Notify"
-                          name="FriendlyExpression">(DT_WSTR,50)(LTRIM(RTRIM(Class)) == "" ? "Unknown" : LTRIM(RTRIM(Class)))</property>
+                          name="FriendlyExpression">(DT_WSTR,50)(LTRIM(RTRIM(Satisfaction)) == "" ? "Unknown" : LTRIM(RTRIM(Satisfaction)))</property>
                       </properties>
                     </outputColumn>
                     <outputColumn
@@ -3758,7 +3758,7 @@
                 <property
                   dataType="System.Int32"
                   description="Spécifie quand les validations sont émises pendant l'insertion des données.  Une valeur égale à 0 spécifie qu'une validation sera émise à la fin de l'insertion des données.  Ne s'applique que si le chargement rapide est activé."
-                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+                  name="FastLoadMaxInsertCommitSize">50000</property>
               </properties>
               <connections>
                 <connection
@@ -4051,7 +4051,7 @@
                     <externalMetadataColumn
                       refId="Package\SRC_satisfaction\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Satisfaction]"
                       dataType="wstr"
-                      length="500"
+                      length="50"
                       name="Satisfaction" />
                     <externalMetadataColumn
                       refId="Package\SRC_satisfaction\Destination OLE DB.Inputs[Entrée de destination OLE DB].ExternalColumns[Satisfaction_Flag]"
@@ -4090,7 +4090,7 @@
               componentClassID="Microsoft.FlatFileSource"
               contactInfo="Source du fichier plat;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; Tous droits réservés; http://www.microsoft.com/sql/support;1"
               description="Source du fichier plat"
-              localeId="1036"
+              localeId="1033"
               name="SRC_satisfaction"
               usesDispositions="true"
               version="1">
@@ -4864,31 +4864,31 @@
       <GraphLayout
         Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
-          Size="185,42"
+          Size="184.8,41.6"
           Id="Package\DFT_Load_Customer"
           TopLeft="655,142.5" />
         <NodeLayout
-          Size="160,42"
+          Size="160,41.6"
           Id="Package\DFT_Load_Date"
           TopLeft="865,143.5" />
         <NodeLayout
-          Size="190,42"
+          Size="190.4,41.6"
           Id="Package\SQL_Prepare_Staging"
           TopLeft="555.5,5.49999999999989" />
         <NodeLayout
-          Size="188,42"
+          Size="188,41.6"
           Id="Package\SQL_Rebuild_Staging"
           TopLeft="556.5,311.5" />
         <NodeLayout
-          Size="190,42"
+          Size="190.4,41.6"
           Id="Package\SQL_Validate_Staging"
           TopLeft="555.5,413.5" />
         <NodeLayout
-          Size="142,42"
+          Size="142.4,41.6"
           Id="Package\SRC_activity"
           TopLeft="446,141" />
         <NodeLayout
-          Size="163,42"
+          Size="163.2,41.6"
           Id="Package\SRC_satisfaction"
           TopLeft="240,142" />
         <EdgeLayout
@@ -5062,108 +5062,6 @@
           </EdgeLayout.Labels>
         </EdgeLayout>
         <EdgeLayout
-          Id="Package.PrecedenceConstraints[Contrainte 5]"
-          TopLeft="747.5,184.5">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="-79,127"
-              Start="0,0"
-              End="-79,119.5">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,66.2235294117647" />
-                  <mssgle:CubicBezierSegment
-                    Point1="0,66.2235294117647"
-                    Point2="0,70.2235294117647"
-                    Point3="-4,70.2235294117647" />
-                  <mssgle:LineSegment
-                    End="-75,70.2235294117647" />
-                  <mssgle:CubicBezierSegment
-                    Point1="-75,70.2235294117647"
-                    Point2="-79,70.2235294117647"
-                    Point3="-79,74.2235294117647" />
-                  <mssgle:LineSegment
-                    End="-79,119.5" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-        <EdgeLayout
-          Id="Package.PrecedenceConstraints[Contrainte 6]"
-          TopLeft="705.1,47.4999999999999">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="239.9,96"
-              Start="0,0"
-              End="239.9,88.5">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,24.6440177252585" />
-                  <mssgle:CubicBezierSegment
-                    Point1="0,24.6440177252585"
-                    Point2="0,28.6440177252585"
-                    Point3="4,28.6440177252585" />
-                  <mssgle:LineSegment
-                    End="235.9,28.6440177252585" />
-                  <mssgle:CubicBezierSegment
-                    Point1="235.9,28.6440177252585"
-                    Point2="239.9,28.6440177252585"
-                    Point3="239.9,32.6440177252585" />
-                  <mssgle:LineSegment
-                    End="239.9,88.5" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-        <EdgeLayout
-          Id="Package.PrecedenceConstraints[Contrainte 7]"
-          TopLeft="945,185.5">
-          <EdgeLayout.Curve>
-            <mssgle:Curve
-              StartConnector="{assembly:Null}"
-              EndConnector="-240.5,126"
-              Start="0,0"
-              End="-240.5,118.5">
-              <mssgle:Curve.Segments>
-                <mssgle:SegmentCollection
-                  Capacity="5">
-                  <mssgle:LineSegment
-                    End="0,84.3880597014925" />
-                  <mssgle:CubicBezierSegment
-                    Point1="0,84.3880597014925"
-                    Point2="0,88.3880597014925"
-                    Point3="-4,88.3880597014925" />
-                  <mssgle:LineSegment
-                    End="-236.5,88.3880597014925" />
-                  <mssgle:CubicBezierSegment
-                    Point1="-236.5,88.3880597014925"
-                    Point2="-240.5,88.3880597014925"
-                    Point3="-240.5,92.3880597014925" />
-                  <mssgle:LineSegment
-                    End="-240.5,118.5" />
-                </mssgle:SegmentCollection>
-              </mssgle:Curve.Segments>
-            </mssgle:Curve>
-          </EdgeLayout.Curve>
-          <EdgeLayout.Labels>
-            <EdgeLabelCollection />
-          </EdgeLayout.Labels>
-        </EdgeLayout>
-        <EdgeLayout
           Id="Package.PrecedenceConstraints[Rebuild_to_Validate]"
           TopLeft="650.5,353.5">
           <EdgeLayout.Curve>
@@ -5194,35 +5092,35 @@
       <GraphLayout
         Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
-          Size="183,42"
+          Size="176.8,41.6"
           Id="Package\DFT_Load_Customer\DC_TypeCastActivity"
           TopLeft="407,259" />
         <NodeLayout
-          Size="165,42"
+          Size="164.8,41.6"
           Id="Package\DFT_Load_Customer\DC_CleanActivity"
           TopLeft="422,164" />
         <NodeLayout
-          Size="210,42"
+          Size="209.6,41.6"
           Id="Package\DFT_Load_Customer\DST_stg_customer_loyalty"
           TopLeft="398,363" />
         <NodeLayout
-          Size="154,42"
+          Size="153.6,41.6"
           Id="Package\DFT_Load_Customer\SRC_customer"
           TopLeft="429,55" />
         <EdgeLayout
           Id="Package\DFT_Load_Customer.Paths[Sortie de conversion de données]"
-          TopLeft="500.75,301">
+          TopLeft="499.1,300.6">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
-              EndConnector="0,62"
+              EndConnector="0,62.4"
               Start="0,0"
-              End="0,54.5">
+              End="0,54.9">
               <mssgle:Curve.Segments>
                 <mssgle:SegmentCollection
                   Capacity="5">
                   <mssgle:LineSegment
-                    End="0,54.5" />
+                    End="0,54.9" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>
@@ -5233,18 +5131,30 @@
         </EdgeLayout>
         <EdgeLayout
           Id="Package\DFT_Load_Customer.Paths[Sortie de colonne dérivée]"
-          TopLeft="501.5,206">
+          TopLeft="504.4,205.6">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
-              EndConnector="0,53"
+              EndConnector="-9,53.4"
               Start="0,0"
-              End="0,45.5">
+              End="-9,45.9">
               <mssgle:Curve.Segments>
                 <mssgle:SegmentCollection
                   Capacity="5">
                   <mssgle:LineSegment
-                    End="0,45.5" />
+                    End="0,22.7" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,22.7"
+                    Point2="0,26.7"
+                    Point3="-4,26.7" />
+                  <mssgle:LineSegment
+                    End="-5,26.7" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-5,26.7"
+                    Point2="-9,26.7"
+                    Point3="-9,30.7" />
+                  <mssgle:LineSegment
+                    End="-9,45.9" />
                 </mssgle:SegmentCollection>
               </mssgle:Curve.Segments>
             </mssgle:Curve>
@@ -5485,21 +5395,21 @@
           Id="Package\SRC_satisfaction\DC_AvgScore"
           TopLeft="435,367" />
         <NodeLayout
-          Size="195,42"
-          Id="Package\SRC_satisfaction\Conversion de données"
-          TopLeft="418,259" />
-        <NodeLayout
           Size="164,42"
           Id="Package\SRC_satisfaction\DC_CleanStrings"
           TopLeft="433,164" />
         <NodeLayout
-          Size="163,42"
-          Id="Package\SRC_satisfaction\SRC_satisfaction"
-          TopLeft="429,55" />
-        <NodeLayout
           Size="177,42"
           Id="Package\SRC_satisfaction\Destination OLE DB"
           TopLeft="423,479" />
+        <NodeLayout
+          Size="195,42"
+          Id="Package\SRC_satisfaction\Conversion de données"
+          TopLeft="418,259" />
+        <NodeLayout
+          Size="163,42"
+          Id="Package\SRC_satisfaction\SRC_satisfaction"
+          TopLeft="429,55" />
         <EdgeLayout
           Id="Package\SRC_satisfaction.Paths[Sortie de source de fichier plat]"
           TopLeft="512.75,97">
