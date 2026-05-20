@@ -1,0 +1,35 @@
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass-header {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+}
+
+.hero-gradient {
+    background: linear-gradient(135deg, #0050d4 0%, #7b9cff 100%);
+}
+
+.megamenu {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.2s ease-out;
+}
+
+@media (min-width: 768px) {
+    .group:hover .megamenu {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#mobile-menu {
+    transition: transform 0.3s ease-in-out;
+}
+
+#mobile-menu.hidden-menu {
+    transform: translateX(100%);
+}
