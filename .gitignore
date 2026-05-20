@@ -10,6 +10,8 @@
 *.userosscache
 *.sln.docstates
 *.env
+Lib/
+ML/ml_exports
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -427,3 +429,19 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# ───────── Project-specific ─────────
+# Raw datasets (large; shared separately, not via Git)
+data/
+
+# Claude Code local workspace
+.claude/
+
+# Python virtualenv (in case the name varies)
+backend/.venv/
+
+# Local backend debug logs
+backend/*.log
+
+# DeepFace model cache (downloaded at runtime)
+.deepface/

@@ -16,6 +16,8 @@ const C = {
   textMuted: "#7a96c0",
 };
 
+const CHAT_API_URL = "http://localhost:8000/api/travel-concierge";
+
 // ─── Global Styles (injected once) ──────────────────────────────────────────
 const GlobalStyles = () => (
   <style>{`
@@ -171,10 +173,12 @@ const GlobalStyles = () => (
       border: 1px solid rgba(255,255,255,0.12);
       color: ${C.text};
       border-radius: 18px 18px 18px 4px;
-      padding: 10px 14px;
+      padding: 12px 15px;
       font-size: 14px;
-      max-width: 85%;
+      line-height: 1.6;
+      max-width: 92%;
       align-self: flex-start;
+      overflow-wrap: anywhere;
     }
 
     .accordion-item { border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -927,41 +931,268 @@ function Newsletter() {
   );
 }
 
+// ─── Lightweight markdown renderer (no deps) ────────────────────────────────────
+function splitTableRow(line) {
+  return line.replace(/^\s*\|/, "").replace(/\|\s*$/, "").split("|").map(s => s.trim());
+}
+
+// Parse markdown text into a flat list of block descriptors.
+function parseMarkdown(text) {
+  const lines = String(text).split("\n");
+  const blocks = [];
+  let list = null;
+  const flush = () => { if (list) { blocks.push(list); list = null; } };
+
+  for (let idx = 0; idx < lines.length; idx++) {
+    const line = lines[idx].trimEnd();
+
+    // fenced code block ```
+    const fence = line.match(/^\s*```/);
+    if (fence) {
+      flush();
+      const code = [];
+      idx++;
+      while (idx < lines.length && !/^\s*```/.test(lines[idx])) { code.push(lines[idx]); idx++; }
+      blocks.push({ type: "code", text: code.join("\n") });
+      continue;
+    }
+
+    if (!line.trim()) { flush(); continue; }
+
+    // horizontal rule
+    if (/^\s*([-*_])\1{2,}\s*$/.test(line)) { flush(); blocks.push({ type: "hr" }); continue; }
+
+    // table: a row containing | followed by a |---|---| separator line
+    if (line.includes("|") && idx + 1 < lines.length &&
+        /^[\s|:-]+$/.test(lines[idx + 1]) && lines[idx + 1].includes("-") && lines[idx + 1].includes("|")) {
+      flush();
+      const header = splitTableRow(line);
+      idx += 2;
+      const rows = [];
+      while (idx < lines.length && lines[idx].includes("|") && lines[idx].trim()) {
+        rows.push(splitTableRow(lines[idx])); idx++;
+      }
+      idx--;
+      blocks.push({ type: "table", header, rows });
+      continue;
+    }
+
+    let m;
+    if ((m = line.match(/^(#{1,4})\s+(.*)/))) {
+      flush();
+      blocks.push({ type: "h", level: m[1].length, text: m[2] });
+    } else if ((m = line.match(/^\s*[-*]\s+(.*)/))) {
+      if (!list || list.type !== "ul") { flush(); list = { type: "ul", items: [] }; }
+      list.items.push(m[1]);
+    } else if ((m = line.match(/^\s*\d+\.\s+(.*)/))) {
+      if (!list || list.type !== "ol") { flush(); list = { type: "ol", items: [] }; }
+      list.items.push(m[1]);
+    } else {
+      flush();
+      blocks.push({ type: "p", text: line });
+    }
+  }
+  flush();
+  return blocks;
+}
+
+function renderInline(text, keyPrefix) {
+  const parts = [];
+  const regex = /(\*\*([^*]+)\*\*|\*([^*]+)\*|`([^`]+)`|\[([^\]]+)\]\(([^)]+)\))/g;
+  let last = 0, m, i = 0;
+  while ((m = regex.exec(text)) !== null) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    if (m[2] !== undefined) parts.push(<strong key={`${keyPrefix}-b${i++}`} style={{ color: C.white, fontWeight: 700 }}>{m[2]}</strong>);
+    else if (m[3] !== undefined) parts.push(<em key={`${keyPrefix}-i${i++}`}>{m[3]}</em>);
+    else if (m[4] !== undefined) parts.push(<code key={`${keyPrefix}-c${i++}`} style={{ background: "rgba(201,168,76,0.15)", color: C.gold, padding: "1px 5px", borderRadius: 4, fontSize: "0.9em" }}>{m[4]}</code>);
+    else if (m[5] !== undefined) parts.push(<a key={`${keyPrefix}-a${i++}`} href={m[6]} target="_blank" rel="noreferrer" style={{ color: C.gold, textDecoration: "underline" }}>{m[5]}</a>);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+function MarkdownMessage({ text }) {
+  const blocks = parseMarkdown(text);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {blocks.map((b, i) => {
+        if (b.type === "h") {
+          const size = b.level <= 1 ? 16 : b.level === 2 ? 14 : 13;
+          return <div key={i} style={{ fontWeight: 700, fontSize: size, color: C.gold, marginTop: i ? 4 : 0 }}>{renderInline(b.text, `h${i}`)}</div>;
+        }
+        if (b.type === "hr") {
+          return <hr key={i} style={{ border: "none", borderTop: `1px solid ${C.glassBorder}`, margin: "4px 0", width: "100%" }} />;
+        }
+        if (b.type === "code") {
+          return <pre key={i} style={{ margin: 0, background: "rgba(0,0,0,0.35)", border: `1px solid ${C.glassBorder}`, borderRadius: 8, padding: "10px 12px", overflowX: "auto", fontSize: 12.5, lineHeight: 1.5, color: C.text }}><code>{b.text}</code></pre>;
+        }
+        if (b.type === "table") {
+          return (
+            <div key={i} style={{ overflowX: "auto", maxWidth: "100%" }}>
+              <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 12.5 }}>
+                <thead>
+                  <tr>{b.header.map((h, j) => <th key={j} style={{ textAlign: "left", padding: "6px 8px", borderBottom: `1px solid ${C.gold}`, color: C.gold, whiteSpace: "nowrap" }}>{renderInline(h, `th${i}-${j}`)}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {b.rows.map((r, ri) => <tr key={ri}>{r.map((c, ci) => <td key={ci} style={{ padding: "6px 8px", borderBottom: "1px solid rgba(255,255,255,0.08)", verticalAlign: "top" }}>{renderInline(c, `td${i}-${ri}-${ci}`)}</td>)}</tr>)}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+        if (b.type === "ul" || b.type === "ol") {
+          const Tag = b.type === "ul" ? "ul" : "ol";
+          return (
+            <Tag key={i} style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+              {b.items.map((it, j) => <li key={j} style={{ lineHeight: 1.55 }}>{renderInline(it, `l${i}-${j}`)}</li>)}
+            </Tag>
+          );
+        }
+        return <div key={i} style={{ lineHeight: 1.6 }}>{renderInline(b.text, `p${i}`)}</div>;
+      })}
+    </div>
+  );
+}
+
+// ─── Print an AI response as a clean itinerary document ──────────────────────────
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function inlineToHtml(text) {
+  let s = escapeHtml(text);
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  return s;
+}
+
+function blocksToHtml(blocks) {
+  return blocks.map(b => {
+    if (b.type === "h") { const l = Math.min(b.level, 4); return `<h${l}>${inlineToHtml(b.text)}</h${l}>`; }
+    if (b.type === "hr") return "<hr>";
+    if (b.type === "code") return `<pre><code>${escapeHtml(b.text)}</code></pre>`;
+    if (b.type === "ul") return `<ul>${b.items.map(it => `<li>${inlineToHtml(it)}</li>`).join("")}</ul>`;
+    if (b.type === "ol") return `<ol>${b.items.map(it => `<li>${inlineToHtml(it)}</li>`).join("")}</ol>`;
+    if (b.type === "table") {
+      return `<table><thead><tr>${b.header.map(h => `<th>${inlineToHtml(h)}</th>`).join("")}</tr></thead>` +
+        `<tbody>${b.rows.map(r => `<tr>${r.map(c => `<td>${inlineToHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    }
+    return `<p>${inlineToHtml(b.text)}</p>`;
+  }).join("\n");
+}
+
+function printResponse(text) {
+  const body = blocksToHtml(parseMarkdown(text));
+  const win = window.open("", "_blank", "width=760,height=900");
+  if (!win) { alert("Please allow pop-ups to print your itinerary."); return; }
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>SkyVoyage Itinerary</title>
+<style>
+  body{font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;max-width:720px;margin:32px auto;padding:0 24px;line-height:1.65;}
+  h1,h2,h3,h4{font-family:Arial,Helvetica,sans-serif;color:#0a1628;margin:18px 0 8px;}
+  h1{font-size:22px;} h2{font-size:18px;} h3{font-size:15px;} h4{font-size:13px;}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px;}
+  th,td{border:1px solid #ccc;padding:6px 9px;text-align:left;vertical-align:top;}
+  th{background:#f2ede0;}
+  code{background:#f2f2f2;padding:1px 4px;border-radius:3px;font-size:0.9em;}
+  pre{background:#f6f6f6;border:1px solid #ddd;border-radius:6px;padding:10px;overflow:auto;}
+  hr{border:none;border-top:1px solid #ccc;margin:14px 0;}
+  a{color:#b8902f;}
+  .brand{font-family:Arial;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b8902f;border-bottom:2px solid #b8902f;padding-bottom:8px;margin-bottom:20px;}
+  .foot{margin-top:28px;border-top:1px solid #ddd;padding-top:10px;font-family:Arial;font-size:11px;color:#888;}
+</style></head><body>
+<div class="brand">SkyVoyage &middot; AI Travel Itinerary</div>
+${body}
+<div class="foot">Generated by SkyVoyage Sky Assistant &middot; ${new Date().toLocaleDateString()}</div>
+<script>window.onload=function(){window.focus();window.print();}</script>
+</body></html>`);
+  win.document.close();
+}
+
 // ─── AI Chat Widget ───────────────────────────────────────────────────────────
 function AiChat() {
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState([
     { role: "ai", text: "Hello! I'm Sky, your AI travel assistant. How can I help plan your perfect journey today? ✈️" }
   ]);
-  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    destination: "",
+    days: 5,
+    budget: "medium",
+    interests: "",
+  });
   const bottomRef = useRef();
 
-  const QUICK = ["Best business class routes", "Help me find deals", "What's included in First Class?"];
+  const QUICK = [
+    {
+      label: "Dubai · 5 days · Luxury",
+      payload: {
+        destination: "Dubai",
+        days: 5,
+        budget: "luxury",
+        interests: "shopping, desert safari, fine dining, skyline views",
+      },
+    },
+    {
+      label: "Paris · 4 days · Medium",
+      payload: {
+        destination: "Paris",
+        days: 4,
+        budget: "medium",
+        interests: "museums, cafes, landmarks, walking tours",
+      },
+    },
+    {
+      label: "Tokyo · 7 days · High",
+      payload: {
+        destination: "Tokyo",
+        days: 7,
+        budget: "high",
+        interests: "food, tech, temples, shopping districts",
+      },
+    },
+  ];
 
-  const send = async (text) => {
-    if (!text.trim()) return;
-    const newMsgs = [...msgs, { role: "user", text }];
-    setMsgs(newMsgs);
-    setInput("");
+  const updateField = (key, value) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  const sendStructured = async (payload) => {
+    const data = payload || form;
+    const destination = data.destination.trim();
+    const interests = data.interests.trim();
+
+    if (!destination || !interests || !data.days || !data.budget) {
+      setError("Please fill destination, days, budget, and interests.");
+      return;
+    }
+
+    setError("");
     setLoading(true);
+    const summary = `Trip request: ${data.days} days in ${destination} · Budget: ${data.budget} · Interests: ${interests}`;
+    setMsgs(prev => [...prev, { role: "user", text: summary }]);
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch(CHAT_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: "You are Sky, SkyVoyage Airlines' friendly and knowledgeable AI travel assistant. You help passengers with flight information, travel tips, booking guidance, destination recommendations, and airline policies. Be concise, warm, and helpful. Use aviation/travel context naturally. Keep responses under 3 sentences unless detail is truly needed.",
-          messages: newMsgs.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text })),
+          destination,
+          days: Number(data.days),
+          budget: data.budget,
+          interests,
         }),
       });
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || "I'd be happy to help! Please contact our support team for more details.";
+      if (!res.ok) throw new Error("Request failed");
+      const dataRes = await res.json();
+      const reply = dataRes.reply || "I couldn't generate an itinerary just now. Please try again.";
       setMsgs(prev => [...prev, { role: "ai", text: reply }]);
     } catch {
-      setMsgs(prev => [...prev, { role: "ai", text: "I'm having trouble connecting right now. Please try again or contact our 24/7 support team." }]);
+      setMsgs(prev => [...prev, { role: "ai", text: "I'm having trouble connecting right now. Please try again later." }]);
     }
     setLoading(false);
   };
@@ -986,11 +1217,12 @@ function AiChat() {
       {open && (
         <div style={{
           position: "fixed", bottom: 96, right: 28, zIndex: 2000,
-          width: 340, height: 480,
+          width: "min(400px, calc(100vw - 32px))",
+          height: "min(600px, calc(100vh - 140px))",
           background: C.navyMid, border: `1px solid ${C.glassBorder}`,
           borderRadius: 16, display: "flex", flexDirection: "column",
           boxShadow: `0 24px 60px rgba(0,0,0,0.6)`,
-          animation: "fadeUp 0.3s ease",
+          animation: "fadeUp 0.3s ease", overflow: "hidden",
         }}>
           {/* Header */}
           <div style={{
@@ -1009,10 +1241,105 @@ function AiChat() {
             </div>
           </div>
 
+          {/* Planner Form */}
+          <div style={{
+            padding: "14px 20px 16px",
+            borderBottom: `1px solid ${C.glassBorder}`,
+            background: "rgba(201,168,76,0.06)",
+          }}>
+            <div style={{ fontSize: 11, color: C.gold, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+              Trip Planner
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              <input
+                value={form.destination}
+                onChange={e => updateField("destination", e.target.value)}
+                placeholder="Destination"
+                style={{
+                  background: "rgba(255,255,255,0.06)", border: `1px solid ${C.glassBorder}`,
+                  borderRadius: 6, padding: "9px 12px", color: C.white, fontSize: 12,
+                  minWidth: 0, width: "100%", boxSizing: "border-box",
+                }}
+              />
+              <input
+                type="number"
+                min={1}
+                max={30}
+                value={form.days}
+                onChange={e => updateField("days", e.target.value)}
+                placeholder="Days"
+                style={{
+                  background: "rgba(255,255,255,0.06)", border: `1px solid ${C.glassBorder}`,
+                  borderRadius: 6, padding: "9px 12px", color: C.white, fontSize: 12,
+                  minWidth: 0, width: "100%", boxSizing: "border-box",
+                }}
+              />
+              <select
+                value={form.budget}
+                onChange={e => updateField("budget", e.target.value)}
+                style={{
+                  background: "rgba(10,22,40,0.9)", border: `1px solid ${C.glassBorder}`,
+                  borderRadius: 6, padding: "9px 12px", color: C.white, fontSize: 12,
+                  cursor: "pointer", minWidth: 0, width: "100%", boxSizing: "border-box",
+                }}
+              >
+                {["low", "medium", "high", "luxury"].map(b => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+              <input
+                value={form.interests}
+                onChange={e => updateField("interests", e.target.value)}
+                placeholder="Interests (food, beaches, museums)"
+                style={{
+                  background: "rgba(255,255,255,0.06)", border: `1px solid ${C.glassBorder}`,
+                  borderRadius: 6, padding: "9px 12px", color: C.white, fontSize: 12,
+                  minWidth: 0, width: "100%", boxSizing: "border-box",
+                }}
+              />
+            </div>
+            {error && (
+              <div style={{ color: C.gold, fontSize: 11, marginTop: 8 }}>{error}</div>
+            )}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+              <button
+                className="sv-btn-gold"
+                onClick={() => sendStructured()}
+                style={{ padding: "8px 18px", fontSize: 11 }}
+                disabled={loading}
+              >
+                Generate Itinerary
+              </button>
+            </div>
+          </div>
+
           {/* Messages */}
           <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
             {msgs.map((m, i) => (
-              <div key={i} className={m.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}>{m.text}</div>
+              <div key={i} className={m.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}>
+                {m.role === "user" ? m.text : <MarkdownMessage text={m.text} />}
+                {m.role === "ai" && i > 0 && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                    <button
+                      onClick={() => printResponse(m.text)}
+                      title="Print this itinerary"
+                      style={{
+                        display: "flex", alignItems: "center", gap: 5, fontSize: 11,
+                        padding: "4px 10px", borderRadius: 12, cursor: "pointer",
+                        border: `1px solid ${C.glassBorder}`, background: "rgba(201,168,76,0.10)",
+                        color: C.gold,
+                      }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                      </svg>
+                      Print
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
             {loading && (
               <div className="chat-bubble-ai" style={{ display: "flex", gap: 4, alignItems: "center" }}>
@@ -1025,27 +1352,11 @@ function AiChat() {
           {/* Quick Replies */}
           <div style={{ padding: "0 12px 8px", display: "flex", gap: 6, flexWrap: "wrap" }}>
             {QUICK.map(q => (
-              <button key={q} onClick={() => send(q)} style={{
+              <button key={q.label} onClick={() => { setForm(q.payload); sendStructured(q.payload); }} style={{
                 fontSize: 11, padding: "4px 10px", border: `1px solid ${C.glassBorder}`,
                 background: "rgba(255,255,255,0.04)", color: C.textMuted, borderRadius: 12, cursor: "pointer",
-              }}>{q}</button>
+              }}>{q.label}</button>
             ))}
-          </div>
-
-          {/* Input */}
-          <div style={{ padding: "10px 14px 14px", borderTop: `1px solid ${C.glassBorder}`, display: "flex", gap: 8 }}>
-            <input value={input} onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && send(input)}
-              placeholder="Ask me anything…"
-              style={{
-                flex: 1, background: "rgba(255,255,255,0.06)", border: `1px solid ${C.glassBorder}`,
-                borderRadius: 8, padding: "9px 14px", color: C.white, fontSize: 13,
-              }} />
-            <button onClick={() => send(input)} style={{
-              background: `linear-gradient(135deg, ${C.gold}, ${C.goldDark})`,
-              border: "none", borderRadius: 8, padding: "0 14px",
-              color: C.navy, cursor: "pointer", display: "flex", alignItems: "center",
-            }}>{Icon.arrow()}</button>
           </div>
         </div>
       )}
@@ -1169,7 +1480,8 @@ function BookPage() {
   }).sort((a, b) => sortBy === "price" ? a.price - b.price : a.dur.localeCompare(b.dur));
 
   // Seat grid
-  const rows = 6, cols = 6;
+  const rows = 6;
+  // const rows = 6, cols = 6;
   const takenSeats = new Set(["A1", "B2", "C3", "D4", "A3", "E2", "F5", "B4"]);
   const seatLabels = ["A", "B", "C", "D", "E", "F"];
 

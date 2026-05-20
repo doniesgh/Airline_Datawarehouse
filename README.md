@@ -109,3 +109,55 @@ The following transformations were applied using Python (Pandas):
 - Customer segmentation
 
 ---
+
+## 🌐 Web Application (React + FastAPI)
+
+The repo also includes a web app:
+- **Frontend** — React (Vite) in `react/my-app/` — landing site, AI travel-concierge chatbot, and a webcam emotion/face feature.
+- **Backend** — FastAPI in `backend/main.py` (single server, port **8000**) exposing:
+  - `POST /api/travel-concierge` — AI chatbot (via OpenRouter)
+  - `POST /tss/auth/analyze-face` — emotion detection (DeepFace)
+  - `POST /tss/auth/extract-descriptor`, `/verify-face` — face login (needs MongoDB)
+  - `POST /tss/auth/send-otp`, `/verify-otp` — email OTP
+
+### ✅ Prerequisites
+- **Python 3.11**
+- **Node.js 18+** and npm
+- *(Optional)* **MongoDB** on `localhost:27017` — only for face login/OTP, not for the chatbot or emotion detection
+- An **OpenRouter API key** — free at https://openrouter.ai/keys (for the chatbot)
+
+### 📦 Datasets
+The raw CSVs in `data/` are **not** committed (too large for GitHub). Get them from the team's shared drive and place them in `data/` before running the ML notebooks.
+
+### 1️⃣ Backend setup (`backend/`)
+```bash
+cd backend
+python -m venv .venv
+
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# macOS/Linux:
+# source .venv/bin/activate
+
+pip install -r requirements.txt
+
+# Configure secrets:
+copy .env.example .env        # Windows  (use: cp .env.example .env on macOS/Linux)
+# then edit .env and set OPENROUTER_API_KEY (and SMTP_* / MONGO_* if you need OTP/face login)
+
+uvicorn main:app --port 8000 --reload
+```
+> First call to `/tss/auth/analyze-face` is slow — DeepFace downloads its model weights once, then caches them.
+
+### 2️⃣ Frontend setup (`react/my-app/`)
+```bash
+cd react/my-app
+npm install
+npm run dev
+```
+Open the printed URL (default **http://localhost:5173**).
+
+### 🔗 How they connect
+The frontend calls the backend at `http://localhost:8000`. If you run the backend on a different port, update the URLs in `react/my-app/src/pages/Home.jsx` (`CHAT_API_URL` and the `analyze-face` fetch).
+
+---
