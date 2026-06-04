@@ -1,0 +1,234 @@
+{
+  "aspects": {
+    "food": [
+      "food",
+      "meal",
+      "snack",
+      "drink",
+      "beverage",
+      "catering"
+    ],
+    "delays": [
+      "delay",
+      "delayed",
+      "late",
+      "cancel",
+      "cancelled",
+      "canceled",
+      "reschedule",
+      "missed",
+      "waiting",
+      "hold"
+    ],
+    "staff": [
+      "staff",
+      "crew",
+      "attendant",
+      "service",
+      "agent",
+      "desk",
+      "support",
+      "help"
+    ],
+    "seat_comfort": [
+      "seat",
+      "legroom",
+      "leg room",
+      "recline",
+      "comfort",
+      "cabin",
+      "space"
+    ],
+    "baggage": [
+      "baggage",
+      "bag",
+      "luggage",
+      "lost",
+      "claim",
+      "carry-on",
+      "carryon"
+    ],
+    "check_in": [
+      "check-in",
+      "check in",
+      "boarding",
+      "gate",
+      "security",
+      "tsa",
+      "counter"
+    ],
+    "wifi": [
+      "wifi",
+      "wi-fi",
+      "internet",
+      "connection",
+      "online"
+    ]
+  },
+  "complaint_rules": {
+    "delays_cancellations": [
+      "delay",
+      "delayed",
+      "late",
+      "cancel",
+      "cancelled",
+      "canceled",
+      "missed",
+      "reschedule"
+    ],
+    "baggage_issues": [
+      "baggage",
+      "bag",
+      "luggage",
+      "lost",
+      "claim",
+      "damaged"
+    ],
+    "staff_service": [
+      "rude",
+      "staff",
+      "crew",
+      "attendant",
+      "agent",
+      "support",
+      "service",
+      "help"
+    ],
+    "seat_comfort": [
+      "seat",
+      "legroom",
+      "recline",
+      "comfort",
+      "space"
+    ],
+    "check_in_boarding": [
+      "check-in",
+      "check in",
+      "boarding",
+      "gate",
+      "counter",
+      "security",
+      "tsa"
+    ],
+    "food_quality": [
+      "food",
+      "meal",
+      "snack",
+      "drink",
+      "beverage"
+    ],
+    "wifi_entertainment": [
+      "wifi",
+      "wi-fi",
+      "internet",
+      "entertainment",
+      "tv"
+    ],
+    "booking_refund": [
+      "booking",
+      "booked",
+      "reservation",
+      "refund",
+      "charge",
+      "fee",
+      "price",
+      "pricing"
+    ]
+  },
+  "emotion_lex": {
+    "frustration": [
+      "frustrat",
+      "annoy",
+      "upset",
+      "fed up",
+      "tired of",
+      "irritat"
+    ],
+    "anger": [
+      "angry",
+      "furious",
+      "mad",
+      "rage",
+      "pissed",
+      "outrage"
+    ],
+    "satisfaction": [
+      "happy",
+      "pleased",
+      "great",
+      "amazing",
+      "love",
+      "excellent",
+      "awesome",
+      "delight"
+    ],
+    "stress": [
+      "stress",
+      "anxious",
+      "worried",
+      "panic",
+      "nervous",
+      "pressure"
+    ]
+  },
+  "churn_terms": [
+    "never fly",
+    "never again",
+    "wont fly",
+    "won't fly",
+    "stop flying",
+    "switch",
+    "boycott",
+    "cancel membership",
+    "close account",
+    "refund",
+    "chargeback",
+    "take my business",
+    "lost my business"
+  ],
+  "positive_keywords": [
+    "loyal customer",
+    "loyalty",
+    "love",
+    "loved",
+    "great",
+    "excellent",
+    "amazing",
+    "friendly",
+    "wonderful",
+    "fantastic",
+    "awesome",
+    "delighted",
+    "outstanding",
+    "superb",
+    "perfect",
+    "best experience",
+    "recommend",
+    "thank you",
+    "appreciate",
+    "pleased"
+  ],
+  "negative_keywords": [
+    "disappointing",
+    "disappointed",
+    "terrible",
+    "horrible",
+    "awful",
+    "worst",
+    "ruined",
+    "unhelpful",
+    "rude",
+    "frustrating",
+    "annoying",
+    "useless",
+    "waste of money",
+    "nightmare",
+    "appalling",
+    "ridiculous"
+  ],
+  "classes": [
+    "negative",
+    "neutral",
+    "positive"
+  ]
+}

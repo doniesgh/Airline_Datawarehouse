@@ -11,3 +11,18 @@ opencv-python-headless
 numpy
 pymongo
 tf-keras
+
+# NLP / Voice-of-Customer (nlp_service.py)
+scikit-learn
+joblib
+pandas
+
+# Loyalty (loyalty_service.py)
+xgboost
+imbalanced-learn
+sqlalchemy
+pyodbc
+
+# Auth (auth_service.py)
+passlib[bcrypt]
+bcrypt==4.0.1

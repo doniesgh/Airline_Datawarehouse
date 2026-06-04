@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import VoCPage from "./VoC";
+import LoyaltyPage from "./Loyalty";
+import LoginPage from "./Login";
+import AdminUsersPage from "./AdminUsers";
+import FeedbackWidget from "../components/FeedbackWidget";
+import { useAuth } from "../contexts/AuthContext";
 
 // ─── Color Tokens ───────────────────────────────────────────────────────────
 const C = {
@@ -404,7 +410,8 @@ function CameraPermissionPopup({ onClose }) {
 function NavBar({ page, setPage, darkMode, setDarkMode }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, isAuthenticated, isManager, isAdmin, logout } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -416,7 +423,21 @@ function NavBar({ page, setPage, darkMode, setDarkMode }) {
     ? `rgba(10,22,40,0.97)`
     : "transparent";
 
-  const navItems = ["Home", "Destinations", "Book", "About", "Contact"];
+  const baseItems = ["Home", "Destinations", "Book", "About", "Contact"];
+  const navItems = [
+    ...baseItems,
+    ...(isManager ? ["Insights", "Loyalty"] : []),
+    ...(isAdmin   ? ["Users"]               : []),
+  ];
+
+  const roleColor = user?.role === "admin" ? "#dc2626"
+                   : user?.role === "manager" ? C.gold : "#16a34a";
+
+  const handleLogout = async () => {
+    await logout();
+    setUserMenuOpen(false);
+    setPage("home");
+  };
 
   return (
     <>
@@ -449,16 +470,82 @@ function NavBar({ page, setPage, darkMode, setDarkMode }) {
           </div>
 
           {/* Controls */}
-          <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 16 }}>
-
-
+          <div className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: 16, position: "relative" }}>
             <button onClick={() => setDarkMode(!darkMode)}
               style={{ background: "none", border: "none", color: C.textMuted, cursor: "pointer", display: "flex" }}>
               {darkMode ? Icon.sun(16) : Icon.moon(16)}
             </button>
-            <button className="sv-btn-gold" onClick={() => setLoginOpen(true)} style={{ padding: "9px 20px", fontSize: 12 }}>
-              {Icon.user(14)} &nbsp;Sign In
-            </button>
+
+            {!isAuthenticated && (
+              <button className="sv-btn-gold" onClick={() => setPage("login")} style={{ padding: "9px 20px", fontSize: 12 }}>
+                {Icon.user(14)} &nbsp;Sign In
+              </button>
+            )}
+
+            {isAuthenticated && (
+              <div style={{ position: "relative" }}>
+                <button onClick={() => setUserMenuOpen(o => !o)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "rgba(255,255,255,0.05)",
+                    border: `1px solid ${roleColor}55`, borderRadius: 999,
+                    padding: "6px 14px 6px 6px", cursor: "pointer",
+                  }}>
+                  <span style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    background: roleColor, color: C.navy,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 700, fontSize: 12,
+                  }}>{user.name?.[0]?.toUpperCase() || "U"}</span>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ color: C.white, fontSize: 12, lineHeight: 1.1 }}>{user.name}</div>
+                    <div style={{ color: roleColor, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" }}>{user.role}</div>
+                  </div>
+                </button>
+                {userMenuOpen && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 8px)", right: 0,
+                    background: C.navyMid, border: `1px solid ${C.glassBorder}`,
+                    borderRadius: 10, minWidth: 200, padding: 8,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.4)", zIndex: 1001,
+                  }}>
+                    <div style={{ padding: "8px 10px", color: C.textMuted, fontSize: 11, borderBottom: `1px solid ${C.glassBorder}`, marginBottom: 4 }}>
+                      {user.email || "—"}
+                    </div>
+                    {isAdmin && (
+                      <div onClick={() => { setPage("users"); setUserMenuOpen(false); }}
+                        style={{ padding: "8px 10px", color: C.text, fontSize: 13, cursor: "pointer", borderRadius: 6 }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        Manage users
+                      </div>
+                    )}
+                    {isManager && (
+                      <>
+                        <div onClick={() => { setPage("insights"); setUserMenuOpen(false); }}
+                          style={{ padding: "8px 10px", color: C.text, fontSize: 13, cursor: "pointer", borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          Voice of Customer
+                        </div>
+                        <div onClick={() => { setPage("loyalty"); setUserMenuOpen(false); }}
+                          style={{ padding: "8px 10px", color: C.text, fontSize: 13, cursor: "pointer", borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          CLV & Churn
+                        </div>
+                      </>
+                    )}
+                    <div onClick={handleLogout}
+                      style={{ padding: "8px 10px", color: "#dc2626", fontSize: 13, cursor: "pointer", borderRadius: 6 }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(220,38,38,0.1)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                      Sign out
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -480,46 +567,23 @@ function NavBar({ page, setPage, darkMode, setDarkMode }) {
                 {item}
               </span>
             ))}
-            <button className="sv-btn-gold" onClick={() => setLoginOpen(true)} style={{ width: "fit-content" }}>Sign In</button>
+            {!isAuthenticated ? (
+              <button className="sv-btn-gold"
+                onClick={() => { setPage("login"); setMobileOpen(false); }}
+                style={{ width: "fit-content" }}>Sign In</button>
+            ) : (
+              <>
+                <div style={{ color: C.textMuted, fontSize: 12 }}>
+                  Signed in as <span style={{ color: roleColor }}>{user.name} · {user.role}</span>
+                </div>
+                <button className="sv-btn-outline"
+                  onClick={handleLogout}
+                  style={{ width: "fit-content" }}>Sign out</button>
+              </>
+            )}
           </div>
         )}
       </nav>
-
-      {/* Login Modal */}
-      {loginOpen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center",
-        }} onClick={() => setLoginOpen(false)}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: C.navyMid, border: `1px solid ${C.glassBorder}`,
-            borderRadius: 12, padding: 40, width: "min(420px, 90vw)",
-            animation: "fadeUp 0.3s ease",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: C.white }}>Welcome Back</div>
-              <button onClick={() => setLoginOpen(false)} style={{ background: "none", border: "none", color: C.textMuted, cursor: "pointer" }}>{Icon.close(20)}</button>
-            </div>
-            {["Email Address", "Password"].map(pl => (
-              <input key={pl} type={pl === "Password" ? "password" : "email"} placeholder={pl}
-                style={{
-                  width: "100%", background: "rgba(255,255,255,0.06)",
-                  border: `1px solid ${C.glassBorder}`, borderRadius: 6,
-                  padding: "13px 16px", color: C.white, fontSize: 14,
-                  marginBottom: 14, display: "block",
-                }} />
-            ))}
-            <button className="sv-btn-gold" style={{ width: "100%", marginTop: 8 }}>Sign In</button>
-            <div style={{ textAlign: "center", marginTop: 20, color: C.textMuted, fontSize: 13 }}>
-              Don't have an account?{" "}
-              <span style={{ color: C.gold, cursor: "pointer" }}>Create Account</span>
-            </div>
-            <div style={{ textAlign: "center", marginTop: 8 }}>
-              <span style={{ color: C.gold, fontSize: 12, cursor: "pointer" }}>Forgot Password?</span>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
@@ -2036,6 +2100,29 @@ function ContactPage() {
   );
 }
 
+// ─── Access Denied ───────────────────────────────────────────────────────────
+function AccessDenied({ setPage, needed }) {
+  return (
+    <div style={{
+      minHeight: "70vh", paddingTop: 160, textAlign: "center",
+      display: "flex", flexDirection: "column", alignItems: "center",
+    }}>
+      <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 48, color: C.gold }}>403</div>
+      <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, color: C.white, marginTop: 8 }}>
+        Access restricted
+      </div>
+      <div style={{ color: C.textMuted, marginTop: 8, maxWidth: 420, fontSize: 14 }}>
+        This area requires the <b style={{ color: C.gold }}>{needed}</b> role.
+        Sign in with the right account to continue.
+      </div>
+      <button className="sv-btn-gold" onClick={() => setPage("login")}
+        style={{ marginTop: 24, padding: "11px 28px" }}>
+        Sign in
+      </button>
+    </div>
+  );
+}
+
 // ─── Root App ─────────────────────────────────────────────────────────────────
 export default function SkyVoyageApp() {
   const [page, setPage] = useState("home");
@@ -2043,6 +2130,7 @@ export default function SkyVoyageApp() {
 
   const [darkMode, setDarkMode] = useState(true);
   const [showCamera, setShowCamera] = useState(true);
+  const { isManager, isAdmin } = useAuth();
   useEmotionDetector({
     onHappy: () => {
       setShowHappyPopup(true);
@@ -2058,6 +2146,13 @@ export default function SkyVoyageApp() {
       case "destinations": return <DestinationsPage setPage={setPage} />;
       case "about": return <AboutPage />;
       case "contact": return <ContactPage />;
+      case "login": return <LoginPage setPage={setPage} />;
+      case "insights":
+        return isManager ? <VoCPage /> : <AccessDenied setPage={setPage} needed="manager or admin" />;
+      case "loyalty":
+        return isManager ? <LoyaltyPage /> : <AccessDenied setPage={setPage} needed="manager or admin" />;
+      case "users":
+        return isAdmin ? <AdminUsersPage /> : <AccessDenied setPage={setPage} needed="admin" />;
       default: return <HomePage setPage={setPage} />;
     }
   };
@@ -2071,6 +2166,7 @@ export default function SkyVoyageApp() {
       <main>{renderPage()}</main>
       <Footer setPage={setPage} />
       <AiChat />
+      <FeedbackWidget />
       {/* Happy detection popup */}
       {showHappyPopup && (
         <div style={{
