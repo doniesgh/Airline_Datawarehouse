@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import VoCPage from "./VoC";
 import LoyaltyPage from "./Loyalty";
+import BIDashboardPage from "./BIDashboard";
 import LoginPage from "./Login";
 import AdminUsersPage from "./AdminUsers";
 import FeedbackWidget from "../components/FeedbackWidget";
@@ -426,8 +427,8 @@ function NavBar({ page, setPage, darkMode, setDarkMode }) {
   const baseItems = ["Home", "Destinations", "Book", "About", "Contact"];
   const navItems = [
     ...baseItems,
-    ...(isManager ? ["Insights", "Loyalty"] : []),
-    ...(isAdmin   ? ["Users"]               : []),
+    ...(isManager ? ["Insights", "Loyalty"]   : []),
+    ...(isAdmin   ? ["Dashboard", "Users"]    : []),
   ];
 
   const roleColor = user?.role === "admin" ? "#dc2626"
@@ -513,12 +514,20 @@ function NavBar({ page, setPage, darkMode, setDarkMode }) {
                       {user.email || "—"}
                     </div>
                     {isAdmin && (
-                      <div onClick={() => { setPage("users"); setUserMenuOpen(false); }}
-                        style={{ padding: "8px 10px", color: C.text, fontSize: 13, cursor: "pointer", borderRadius: 6 }}
-                        onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}
-                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                        Manage users
-                      </div>
+                      <>
+                        <div onClick={() => { setPage("dashboard"); setUserMenuOpen(false); }}
+                          style={{ padding: "8px 10px", color: C.text, fontSize: 13, cursor: "pointer", borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          BI Dashboard
+                        </div>
+                        <div onClick={() => { setPage("users"); setUserMenuOpen(false); }}
+                          style={{ padding: "8px 10px", color: C.text, fontSize: 13, cursor: "pointer", borderRadius: 6 }}
+                          onMouseEnter={e => e.currentTarget.style.background = "rgba(201,168,76,0.1)"}
+                          onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                          Manage users
+                        </div>
+                      </>
                     )}
                     {isManager && (
                       <>
@@ -2151,6 +2160,8 @@ export default function SkyVoyageApp() {
         return isManager ? <VoCPage /> : <AccessDenied setPage={setPage} needed="manager or admin" />;
       case "loyalty":
         return isManager ? <LoyaltyPage /> : <AccessDenied setPage={setPage} needed="manager or admin" />;
+      case "dashboard":
+        return isAdmin ? <BIDashboardPage /> : <AccessDenied setPage={setPage} needed="admin" />;
       case "users":
         return isAdmin ? <AdminUsersPage /> : <AccessDenied setPage={setPage} needed="admin" />;
       default: return <HomePage setPage={setPage} />;
