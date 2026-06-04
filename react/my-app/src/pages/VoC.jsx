@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { nlp } from "../services/api";
+import { cached, getCachedSync } from "../services/cache";
+
+const feedKey = (f) => `nlp.feed:${f.sentiment}|${f.churn_only}|${f.live_only}`;
 
 const C = {
   navy: "#0f2044",
@@ -394,32 +397,44 @@ function LiveAnalyzer() {
   );
 }
 
+const INIT_FILTER = { sentiment: "", churn_only: false, live_only: false };
+
 export default function VoCPage() {
-  const [stats, setStats] = useState(null);
-  const [feed, setFeed] = useState([]);
-  const [dissatisfied, setDissatisfied] = useState([]);
-  const [filter, setFilter] = useState({ sentiment: "", churn_only: false, live_only: false });
-  const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(true);
-  const poolRef = useRef([]);
-  const poolIdxRef = useRef(0);
   const VISIBLE = 30;
   const POOL_SIZE = 200;
 
+  const [filter, setFilter] = useState(INIT_FILTER);
+  const [stats, setStats] = useState(() => getCachedSync("nlp.stats"));
+  const [feed, setFeed] = useState(() => {
+    const c = getCachedSync(feedKey(INIT_FILTER));
+    return c?.items?.slice(0, VISIBLE) || [];
+  });
+  const [dissatisfied, setDissatisfied] = useState(() => {
+    const c = getCachedSync("nlp.dissatisfied");
+    return c?.items || [];
+  });
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(() => !getCachedSync("nlp.stats"));
+  const poolRef = useRef(getCachedSync(feedKey(INIT_FILTER))?.items || []);
+  const poolIdxRef = useRef(Math.min(VISIBLE, poolRef.current.length));
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    const key = feedKey(filter);
+    // Show full loader only when we have nothing to render for this filter.
+    if (!getCachedSync(key)) setLoading(true);
+    else setLoading(true); // brief "updating" pill — cleared in finally
     (async () => {
       try {
         const [s, f, d] = await Promise.all([
-          nlp.stats(),
-          nlp.feed({
+          cached("nlp.stats", () => nlp.stats()),
+          cached(key, () => nlp.feed({
             limit: POOL_SIZE,
             sentiment: filter.sentiment || undefined,
             churn_only: filter.churn_only || undefined,
             live_only: filter.live_only || undefined,
-          }),
-          nlp.dissatisfied({ min_tweets: 3, limit: 15 }),
+          })),
+          cached("nlp.dissatisfied", () => nlp.dissatisfied({ min_tweets: 3, limit: 15 })),
         ]);
         if (cancelled) return;
         const items = f.items || [];
@@ -436,7 +451,7 @@ export default function VoCPage() {
       }
     })();
     return () => { cancelled = true; };
-  }, [filter.sentiment, filter.churn_only, filter.live_only]);
+  }, [filter]);
 
   // Simulated live stream: rotate a fresh card from the pool to the top every 4 s,
   // de-duped by id so the same tweet never appears twice.

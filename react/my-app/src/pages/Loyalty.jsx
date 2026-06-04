@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { loyalty } from "../services/api";
+import { cached, getCachedSync } from "../services/cache";
+
+const customersKey = (f) => `loyalty.customers:${f.risk}|${f.card}|${f.sort}`;
 
 const C = {
   navy: "#0f2044",
@@ -327,49 +330,58 @@ function LiveScorer() {
   );
 }
 
+const INIT_FILTER = { risk: "high", card: "", sort: "churn" };
+
 export default function LoyaltyPage() {
-  const [stats, setStats] = useState(null);
-  const [atRisk, setAtRisk] = useState([]);
-  const [topClv, setTopClv] = useState([]);
-  const [filter, setFilter] = useState({ risk: "high", card: "", sort: "churn" });
-  const [filtered, setFiltered] = useState([]);
+  const [filter, setFilter] = useState(INIT_FILTER);
+  const [stats, setStats] = useState(() => getCachedSync("loyalty.stats"));
+  const [atRisk, setAtRisk] = useState(() => getCachedSync("loyalty.atRisk")?.items || []);
+  const [topClv, setTopClv] = useState(() => getCachedSync("loyalty.topClv")?.items || []);
+  const [filtered, setFiltered] = useState(() => getCachedSync(customersKey(INIT_FILTER))?.items || []);
   const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !getCachedSync("loyalty.stats"));
   const [filterLoading, setFilterLoading] = useState(false);
 
-  const loadStatic = async () => {
+  useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    try {
-      const [s, ar, tc] = await Promise.all([
-        loyalty.stats(),
-        loyalty.atRisk(12),
-        loyalty.topClv(12),
-      ]);
-      setStats(s); setAtRisk(ar.items || []); setTopClv(tc.items || []);
-      setErr("");
-    } catch {
-      setErr("Backend unreachable, or run: python ML/export_loyalty_models.py + import script.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    (async () => {
+      try {
+        const [s, ar, tc] = await Promise.all([
+          cached("loyalty.stats",  () => loyalty.stats()),
+          cached("loyalty.atRisk", () => loyalty.atRisk(12)),
+          cached("loyalty.topClv", () => loyalty.topClv(12)),
+        ]);
+        if (cancelled) return;
+        setStats(s); setAtRisk(ar.items || []); setTopClv(tc.items || []);
+        setErr("");
+      } catch {
+        if (!cancelled) setErr("Backend unreachable, or run: python ML/export_loyalty_models.py + import script.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  const loadFiltered = async () => {
+  useEffect(() => {
+    let cancelled = false;
     setFilterLoading(true);
-    try {
-      const r = await loyalty.customers({
-        limit: 50,
-        risk: filter.risk || undefined,
-        card: filter.card || undefined,
-        sort: filter.sort,
-      });
-      setFiltered(r.items || []);
-    } catch { /* keep silent — banner already shown */ }
-    finally { setFilterLoading(false); }
-  };
-
-  useEffect(() => { loadStatic(); }, []);
-  useEffect(() => { loadFiltered(); }, [filter.risk, filter.card, filter.sort]);
+    const key = customersKey(filter);
+    (async () => {
+      try {
+        const r = await cached(key, () => loyalty.customers({
+          limit: 50,
+          risk:  filter.risk || undefined,
+          card:  filter.card || undefined,
+          sort:  filter.sort,
+        }));
+        if (!cancelled) setFiltered(r.items || []);
+      } catch { /* banner already covers this */ }
+      finally { if (!cancelled) setFilterLoading(false); }
+    })();
+    return () => { cancelled = true; };
+  }, [filter]);
 
   if (loading && !stats && !err) {
     return <FullPageLoader label="Loading loyalty intelligence…" />;
